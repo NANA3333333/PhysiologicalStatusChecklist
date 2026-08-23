@@ -22,6 +22,7 @@ assert.match(prompt, /当前状态字段/u);
 assert.match(prompt, /只有当前状态发生变化/u);
 assert.match(prompt, /记录\+=/u);
 assert.match(prompt, /日期=第2天/u);
+assert.match(prompt, /旧版 HTML\/CSS 状态面板/u);
 assert.match(prompt, /跨过午夜/u);
 assert.match(prompt, /清空昨天/u);
 assert.match(prompt, /每条永久记录不超过60字/u);

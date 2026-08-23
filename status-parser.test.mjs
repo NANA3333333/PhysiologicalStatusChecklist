@@ -8,6 +8,13 @@ import {
     isStoryDayChange,
     parseStatusPayload,
 } from "./status-parser.js";
+import { CHECKLIST_FIELDS, getMatchedChecklistOptions } from "./status-fields.js";
+
+for (const [fieldKey, definition] of Object.entries(CHECKLIST_FIELDS)) {
+    for (const [option] of definition.options) {
+        assert.ok(getMatchedChecklistOptions(fieldKey, option).includes(option), `${fieldKey} must match its raw option: ${option}`);
+    }
+}
 
 const initial = parseStatusPayload("日期=第1天·夜 | 成长周期=幼体·阶段1 | 形态=14岁少年拟态 | 身体=低体温/饥饿 | 驱动=寻找热源 | 记录+=首次将用户识别为唯一热源");
 assert.deepEqual(initial, {

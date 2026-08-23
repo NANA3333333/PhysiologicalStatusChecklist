@@ -134,7 +134,7 @@ function updateStatusPrompt(status = latestStatus) {
     setExtensionPrompt(
         STATUS_PROMPT_KEY,
         buildStatusPrompt(status),
-        extension_prompt_types.IN_PROMPT,
+        extension_prompt_types.IN_CHAT,
         0,
         false,
         extension_prompt_roles.SYSTEM,
@@ -1766,7 +1766,7 @@ export function init() {
     eventSource.makeFirst(event_types.MESSAGE_EDITED, renderMessageImmediately);
     eventSource.makeFirst(event_types.MESSAGE_SWIPED, renderMessageImmediately);
     eventSource.makeFirst(event_types.MORE_MESSAGES_LOADED, renderAllMessages);
-    eventSource.on(event_types.GENERATION_STARTED, refreshStatusPromptFromChat);
+    eventSource.makeFirst(event_types.GENERATION_STARTED, refreshStatusPromptFromChat);
     eventSource.on(event_types.CHAT_CHANGED, () => {
         updateInspectionStatus(createInitialStatus(), []);
         updateChatScope();
