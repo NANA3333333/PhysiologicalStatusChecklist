@@ -1,5 +1,112 @@
 # Unknown Four-Dimensional Entity Status Panel
 
+## 傻瓜式安装
+
+不懂代码也可以安装。这个插件不需要 npm、不需要编译，也不需要修改角色卡。
+
+### 方法一：下载 ZIP（推荐）
+
+1. 打开本仓库页面：<https://github.com/NANA3333333/UnknownFourDimensionalStatusPanel>
+2. 点击绿色的 `Code` 按钮，再点击 `Download ZIP`。
+3. 找到下载好的 ZIP 文件，右键选择“解压到当前文件夹”。
+4. 把解压出来的文件夹改名为：
+
+   ```text
+   UnknownFourDimensionalStatusPanel
+   ```
+
+5. 找到 SillyTavern 的安装目录，在里面打开或新建下面这个文件夹：
+
+   ```text
+   SillyTavern/public/scripts/extensions/third-party/
+   ```
+
+6. 把整个 `UnknownFourDimensionalStatusPanel` 文件夹放进去。
+
+放好以后，目录必须长这样：
+
+```text
+SillyTavern/
+└─ public/
+   └─ scripts/
+      └─ extensions/
+         └─ third-party/
+            └─ UnknownFourDimensionalStatusPanel/
+               ├─ index.js
+               ├─ manifest.json
+               ├─ style.css
+               └─ assets/
+                  └─ human-outline.png
+```
+
+重点检查：`index.js` 必须直接在 `UnknownFourDimensionalStatusPanel` 里面。
+
+下面这种多套了一层文件夹的放法是错误的：
+
+```text
+third-party/UnknownFourDimensionalStatusPanel/UnknownFourDimensionalStatusPanel-main/index.js
+```
+
+7. 关闭并重新启动 SillyTavern。若 SillyTavern 没有关闭，也可以先按 `Ctrl + F5` 强制刷新网页。
+8. 打开任意角色聊天。右下角或页面边缘出现小型 `EXAM` 浮窗，就说明安装成功。
+9. 点击 `EXAM`，会同时打开最新的具体检查记录表和日期签到表。
+
+### 方法二：使用 Git
+
+如果电脑已经安装 Git，在 SillyTavern 的插件目录打开 PowerShell，运行：
+
+```powershell
+git clone https://github.com/NANA3333333/UnknownFourDimensionalStatusPanel.git UnknownFourDimensionalStatusPanel
+```
+
+然后重启 SillyTavern 或按 `Ctrl + F5`。
+
+## 不需要导入插件到角色卡
+
+插件和角色卡是分开的：
+
+- 导入角色卡只会导入人设、开场白和世界书，不会自动带上本插件。
+- 这台 SillyTavern 安装过插件后，其他角色卡也可以使用它。
+- 插件会自动注入状态协议提示词，角色卡不需要再添加 HTML、CSS 或插件提示词。
+- 换到另一台电脑时，需要在那台电脑的 SillyTavern 里重新安装插件。
+
+## 安装后怎么使用
+
+插件安装成功后不需要额外设置：
+
+1. 打开角色聊天。
+2. 点击 `EXAM` 浮窗。
+3. 继续正常对话。
+4. 只有日期、身体状态、损伤、行为或其他记录真正变化时，AI 才需要输出状态行。
+5. 没有状态变化时，AI 可以只输出正常正文。
+
+插件会把状态行隐藏起来，并把数据保存在当前聊天中。正文不需要 HTML，插件也不会把 CSS 追加到正文下面。
+
+## 常见问题
+
+### 看不到 EXAM 浮窗
+
+按下面顺序检查：
+
+1. 确认 `index.js` 在正确的位置：
+
+   ```text
+   SillyTavern/public/scripts/extensions/third-party/UnknownFourDimensionalStatusPanel/index.js
+   ```
+
+2. 确认不是把 ZIP 文件本身放进了 `third-party`。
+3. 确认没有多套一层 `UnknownFourDimensionalStatusPanel-main` 文件夹。
+4. 重启 SillyTavern，或按 `Ctrl + F5`。
+5. 进入角色聊天后再看页面边缘。
+
+### 导入角色卡后没有插件
+
+这是正常的。插件必须单独安装在 SillyTavern 的 `third-party` 文件夹里；角色卡不会携带插件文件。
+
+### 如何更新插件
+
+下载新版本 ZIP 后，用新文件夹替换旧的 `UnknownFourDimensionalStatusPanel` 文件夹，然后重启 SillyTavern 或按 `Ctrl + F5`。当前聊天里的状态数据保存在聊天元数据中，不在插件文件夹里。
+
 This SillyTavern extension owns the incremental `[STATUS: ...]` protocol and renders a draggable floating entry point for a fixed, light-themed humanoid case record. The protocol prompt is injected by the extension, so other character cards can use the panel without copying prompt text into the card.
 
 The extension is enabled for the active character by default. A character can opt out with `data.extensions.u4d_status_panel.enabled = false`.
@@ -28,7 +135,7 @@ The paper table also accepts observation fields: `观察重点`, `精神状态`,
 
 Opening the floating launcher shows the latest examination record and the daily check-in table together. Each paper can be dragged, proportionally zoomed, and closed independently; opening the launcher again restores both papers. The mouse wheel scrolls a field when that fixed field is overflowing; elsewhere on that paper, the same wheel zooms the whole paper. Scrollbars remain hidden. Long field text, permanent records, and check-in history therefore stay on their original single sheets without continuation pages or data loss. All status and daily history data live only in the active chat's `chat_metadata`; the extension does not create a separate database.
 
-## Install
+## Developer Install
 
 Place this folder at:
 
