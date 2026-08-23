@@ -428,9 +428,9 @@ function hasAny(value, patterns) {
     return patterns.some(pattern => pattern.test(text));
 }
 
-function makeChecklistField(label, value, options) {
+function makeChecklistField(label, value, options, { showNote = true } = {}) {
     const field = document.createElement("div");
-    field.className = "u4d-checklist-field";
+    field.className = `u4d-checklist-field${showNote ? "" : " is-compact"}`;
     const labelElement = document.createElement("strong");
     labelElement.textContent = label;
     const optionsElement = document.createElement("div");
@@ -438,11 +438,15 @@ function makeChecklistField(label, value, options) {
     for (const [optionLabel, patterns] of options) {
         optionsElement.appendChild(makeCheckbox(optionLabel, hasAny(value, patterns)));
     }
-    const note = document.createElement("div");
-    note.className = "u4d-checklist-note u4d-scroll-region";
     const text = String(value ?? "").trim();
-    note.textContent = text === "未记录" ? "" : text;
-    field.append(labelElement, optionsElement, note);
+    if (showNote) {
+        const note = document.createElement("div");
+        note.className = "u4d-checklist-note u4d-scroll-region";
+        note.textContent = text === "未记录" ? "" : text;
+        field.append(labelElement, optionsElement, note);
+    } else {
+        field.append(labelElement, optionsElement);
+    }
     return field;
 }
 
@@ -620,8 +624,8 @@ function renderInspectionContent(status) {
     const hygieneSection = makeReportSection("卫生与生理", "护理观察");
     hygieneSection.classList.add("u4d-checklist-grid-section");
     hygieneSection.append(
-        makeChecklistField("清洁状态", status.hygiene, [["清洁", [/清洁|干净/u]], ["需协助", [/需协助|需要清洁|协助清洁/u]], ["拒绝清洁", [/拒绝清洁|抗拒清洁/u]], ["未处理", [/未处理|未清洁/u]]]),
-        makeChecklistField("分泌情况", status.secretion, [["无", [/无分泌|无明显分泌|干燥/u]], ["少量", [/少量|少量分泌/u]], ["明显", [/明显分泌|较多|渗出/u]], ["异常", [/异常|脓|异味/u]]]),
+        makeChecklistField("清洁状态", status.hygiene, [["清洁", [/清洁|干净/u]], ["需协助", [/需协助|需要清洁|协助清洁/u]], ["拒绝清洁", [/拒绝清洁|抗拒清洁/u]], ["未处理", [/未处理|未清洁/u]]], { showNote: false }),
+        makeChecklistField("分泌情况", status.secretion, [["无", [/无分泌|无明显分泌|干燥/u]], ["少量", [/少量|少量分泌/u]], ["明显", [/明显分泌|较多|渗出/u]], ["异常", [/异常|脓|异味/u]]], { showNote: false }),
         makeChecklistField("排泄情况", status.excretion, [["正常", [/正常排泄|排泄正常/u]], ["减少", [/减少|少量排泄|便少|尿少/u]], ["异常", [/异常|失禁|困难|未排/u]], ["未记录", [/未记录|未观察/u]]]),
         makeChecklistField("肌张力", status.muscleTone, [["正常", [/正常张力|肌张力正常/u]], ["紧张", [/紧张|僵硬|绷紧/u]], ["松弛", [/松弛|无力|低张/u]], ["痉挛", [/痉挛|抽搐|收缩异常/u]]]),
     );

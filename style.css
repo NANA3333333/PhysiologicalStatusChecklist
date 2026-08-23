@@ -93,7 +93,7 @@
 .u4d-report-column-right .u4d-report-section { display: block; min-height: 0; flex: 0 0 auto; }
 .u4d-report-column-right .u4d-checklist-field { display: block; min-height: 0; flex: 0 0 auto; }
 .u4d-report-column-right .u4d-checklist-note { flex: none; }
-.u4d-report-column-right { overflow-x: hidden; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.u4d-report-column-right { overflow-x: visible; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
 .u4d-report-column-right::-webkit-scrollbar { display: none; }
 .u4d-checklist-grid-section { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
 .u4d-checklist-grid-section > .u4d-report-section-heading { grid-column: 1 / -1; }
@@ -139,12 +139,14 @@
 .u4d-checklist-field:last-child { border-bottom: 0; }
 .u4d-checklist-field > strong { display: block; margin-bottom: 2px; color: #71514a; font-size: 0.55rem; font-weight: 700; line-height: 1.1; }
 .u4d-checkbox-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px 5px; }
-.u4d-checkbox-option { display: inline-flex; min-width: 0; align-items: center; gap: 3px; color: #8f837b; font-size: 0.51rem; line-height: 1.05; }
+.u4d-checkbox-option { display: flex; min-width: 0; align-items: flex-start; gap: 3px; color: #8f837b; font-size: 0.51rem; line-height: 1.05; overflow-wrap: anywhere; word-break: break-word; white-space: normal; }
+.u4d-checkbox-option > span { min-width: 0; overflow-wrap: anywhere; word-break: break-word; white-space: normal; }
 .u4d-checkbox-option i { display: inline-grid; width: 8px; height: 8px; flex: 0 0 8px; place-items: center; border: 1px solid #b8aaa0; background: #fffdf8; font-style: normal; }
 .u4d-checkbox-option.is-checked { color: #9c4038; font-weight: 700; }
 .u4d-checkbox-option.is-checked i { border-color: #b65046; background: #fff3ed; }
 .u4d-checkbox-option.is-checked i::after { color: #b33c34; content: "✓"; font-size: 0.56rem; font-weight: 900; line-height: 1; }
 .u4d-checklist-note { height: 13px; min-height: 13px; margin-top: 2px; padding: 1px; overflow-x: hidden; overflow-y: auto; border-bottom: 1px dotted #c7baae; color: #4f4843; font-size: 0.52rem; line-height: 12px; overflow-wrap: anywhere; }
+.u4d-checklist-field.is-compact { padding-bottom: 3px; border-bottom: 0; }
 
 .u4d-report-archive { margin-top: 7px; border: 1px solid #aaa095; }
 .u4d-archive-count { flex: 0 0 auto; color: #8b7597; font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace; font-size: 0.48rem; font-weight: 800; }
@@ -200,6 +202,47 @@
     text-shadow: none !important;
     transition: none !important;
     animation: none !important;
+}
+#u4d-inspection-root .u4d-exam-sheet *:hover,
+#u4d-inspection-root .u4d-exam-sheet *:focus,
+#u4d-inspection-root .u4d-exam-sheet *:focus-visible {
+    outline: 0 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+#u4d-inspection-root .u4d-exam-sheet .u4d-date-ledger,
+#u4d-inspection-root .u4d-exam-sheet .u4d-date-ledger:hover,
+#u4d-inspection-root .u4d-exam-sheet .u4d-date-ledger-row,
+#u4d-inspection-root .u4d-exam-sheet .u4d-date-ledger-row:hover,
+#u4d-inspection-root .u4d-exam-sheet .u4d-date-ledger-row > *,
+#u4d-inspection-root .u4d-exam-sheet .u4d-date-ledger-row > *:hover {
+    outline: 0 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+    animation: none !important;
+    border-radius: 0 !important;
+}
+#u4d-inspection-root .u4d-exam-sheet .u4d-date-ledger-row[data-day-key]:hover {
+    cursor: pointer !important;
+}
+#u4d-inspection-root .u4d-exam-sheet .u4d-date-ledger-row > *,
+#u4d-inspection-root .u4d-exam-sheet .u4d-date-ledger-row > *:hover {
+    margin: 0 !important;
+    padding: 5px 6px !important;
+    border: 0 !important;
+    border-right: 1px solid #d4c9bf !important;
+    background: transparent !important;
+}
+#u4d-inspection-root .u4d-exam-sheet .u4d-date-ledger-row > *:last-child,
+#u4d-inspection-root .u4d-exam-sheet .u4d-date-ledger-row > *:last-child:hover {
+    border-right: 0 !important;
 }
 #u4d-inspection-root .u4d-exam-sheet :is(span, strong, b, h1, h2, h3, h4, h5, h6, p, li):hover {
     margin: 0 !important;
