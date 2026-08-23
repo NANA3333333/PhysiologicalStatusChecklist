@@ -79,6 +79,7 @@ git clone https://github.com/NANA3333333/PhysiologicalStatusChecklist.git Unknow
 3. 继续正常对话。
 4. 只有日期、身体状态、损伤、行为或其他记录真正变化时，AI 才需要输出状态行。
 5. 没有状态变化时，AI 可以只输出正常正文。
+6. 勾选类状态出现异常、恶化或变化时，AI 会同步填写“观察补记”，记录具体表现、发生条件、涉及部位和变化结果。
 
 插件会把状态行隐藏起来，并把数据保存在当前聊天中。正文不需要 HTML，插件也不会把 CSS 追加到正文下面。
 
@@ -128,6 +129,8 @@ Later updates on the same story day can be partial:
 The model must update `日期` whenever the narrative crosses midnight or explicitly advances to another day. A day key uses `第N天·时段` (or an established calendar date). Changing only the time of day keeps the same sheet. Changing the day starts a fresh daily examination: short-term observations are cleared, while growth cycle, form, and append-only permanent records carry forward. Ongoing injuries must be reassessed in that new-day status line instead of being silently copied or treated as healed.
 
 The extension injects the prompt before each generation with the latest merged snapshot, then scans the character reply after it is received or edited. It merges the current snapshot, accumulates permanent records, hides the protocol line, and renders the fixed examination desk. The model never needs to generate HTML or CSS, and no status CSS is appended below the message body. `因果+=`, `已学会+=`, `形态库+=`, and `记忆+=` are accepted as categorized permanent records.
+
+When a checkbox-style condition becomes abnormal, worsens, or changes from the current snapshot, the protocol also requires an `观察补记` value describing the manifestation, trigger or circumstances, affected region when applicable, and resulting change. A checkbox conclusion by itself is not sufficient.
 
 The examination record uses date, growth cycle, form, body condition, temperature regulation, breathing, circulation, energy reserve, injury, current drive, pain response, tissue condition, observation, mental state, cognition, mobility, posture, activity level, stress response, touch tolerance, senses, communication, intake, rest, learning and memory, dimensional anomaly, risk assessment, care, hygiene, secretion, excretion, muscle tone, three-dimensional stability, self-care, boundary response, social adaptation, and the append-only archive. Each variable is shown once in a compact 3:4 portrait paper table. A second 3:4 daily check-in table records one row per story day, including growth/form, grouped examination completion, completion count, and a brief daily summary. The body diagram creates a red cross only when the current injury text names that region; inactive marks are not rendered.
 

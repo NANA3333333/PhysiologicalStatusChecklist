@@ -71,6 +71,12 @@ assert.deepEqual(extended.updates, {
     care: "清洁伤口",
 });
 
+const abnormalObservation = parseStatusPayload("呼吸=急促 | 观察补记=受强光刺激后呼吸加快，离开光源后仍未恢复");
+assert.deepEqual(abnormalObservation.updates, {
+    breathing: "急促",
+    observationNote: "受强光刺激后呼吸加快，离开光源后仍未恢复",
+});
+
 const observation = parseStatusPayload("体位=蜷缩 | 活动量=偏低 | 应激=警戒 | 触碰耐受=强烈回避 | 清洁状态=需协助 | 分泌情况=少量 | 排泄情况=正常 | 肌张力=紧张");
 assert.deepEqual(observation.updates, {
     posture: "蜷缩",
@@ -149,6 +155,7 @@ assert.equal(nextDay.body, "清醒");
 assert.equal(nextDay.injury, "左上肢：咬伤未愈");
 assert.equal(nextDay.intake, "");
 assert.equal(nextDay.stress, "");
+assert.equal(nextDay.observationNote, "");
 assert.deepEqual(nextDay.records, ["首次识别用户"]);
 
 console.log("status parser tests passed");

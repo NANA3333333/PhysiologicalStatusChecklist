@@ -24,3 +24,5 @@ assert.match(prompt, /日期=第2天/u);
 assert.match(prompt, /跨过午夜/u);
 assert.match(prompt, /清空昨天/u);
 assert.match(prompt, /每条永久记录不超过60字/u);
+assert.match(prompt, /必须在同一状态行填写“观察补记=”/u);
+assert.match(prompt, /不得只写勾选结论/u);

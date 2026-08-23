@@ -441,7 +441,7 @@ function makeChecklistField(label, value, options, { showNote = true } = {}) {
     const text = String(value ?? "").trim();
     if (showNote) {
         const note = document.createElement("div");
-        note.className = "u4d-checklist-note u4d-scroll-region";
+        note.className = "u4d-checklist-note";
         note.textContent = text === "未记录" ? "" : text;
         field.append(labelElement, optionsElement, note);
     } else {
@@ -565,7 +565,7 @@ function renderInspectionContent(status) {
         makeLinedField("处置记录", status.care, 2),
     );
     const freeNotesSection = makeReportSection("医嘱 / 备注", "补充记录");
-    freeNotesSection.append(makeLinedField("观察补记", "", 14));
+    freeNotesSection.append(makeLinedField("观察补记", status.observationNote, 14));
     leftColumn.append(basicSection, responseSection, freeNotesSection);
 
     const centerColumn = document.createElement("div");
@@ -596,7 +596,7 @@ function renderInspectionContent(status) {
     centerColumn.append(diagramPanel, injurySection, tissueSection, cognitionSection, notesSection);
 
     const rightColumn = document.createElement("div");
-    rightColumn.className = "u4d-report-column u4d-report-column-right u4d-scroll-region";
+    rightColumn.className = "u4d-report-column u4d-report-column-right";
     const physicalSection = makeReportSection("专项检查", "勾选项目");
     physicalSection.append(
         makeChecklistField("精神 / 意识", status.mental, [["清醒", [/清醒/u]], ["警觉", [/警觉|警醒/u]], ["惊恐", [/惊恐|恐惧/u]], ["混乱", [/混乱|昏沉/u]]]),
@@ -626,8 +626,8 @@ function renderInspectionContent(status) {
     hygieneSection.append(
         makeChecklistField("清洁状态", status.hygiene, [["清洁", [/清洁|干净/u]], ["需协助", [/需协助|需要清洁|协助清洁/u]], ["拒绝清洁", [/拒绝清洁|抗拒清洁/u]], ["未处理", [/未处理|未清洁/u]]], { showNote: false }),
         makeChecklistField("分泌情况", status.secretion, [["无", [/无分泌|无明显分泌|干燥/u]], ["少量", [/少量|少量分泌/u]], ["明显", [/明显分泌|较多|渗出/u]], ["异常", [/异常|脓|异味/u]]], { showNote: false }),
-        makeChecklistField("排泄情况", status.excretion, [["正常", [/正常排泄|排泄正常/u]], ["减少", [/减少|少量排泄|便少|尿少/u]], ["异常", [/异常|失禁|困难|未排/u]], ["未记录", [/未记录|未观察/u]]]),
-        makeChecklistField("肌张力", status.muscleTone, [["正常", [/正常张力|肌张力正常/u]], ["紧张", [/紧张|僵硬|绷紧/u]], ["松弛", [/松弛|无力|低张/u]], ["痉挛", [/痉挛|抽搐|收缩异常/u]]]),
+        makeChecklistField("排泄情况", status.excretion, [["正常", [/正常排泄|排泄正常/u]], ["减少", [/减少|少量排泄|便少|尿少/u]], ["异常", [/异常|失禁|困难|未排/u]], ["未记录", [/未记录|未观察/u]]], { showNote: false }),
+        makeChecklistField("肌张力", status.muscleTone, [["正常", [/正常张力|肌张力正常/u]], ["紧张", [/紧张|僵硬|绷紧/u]], ["松弛", [/松弛|无力|低张/u]], ["痉挛", [/痉挛|抽搐|收缩异常/u]]], { showNote: false }),
     );
     rightColumn.append(physicalSection, adaptationSection, behaviorSection, hygieneSection);
     form.append(leftColumn, centerColumn, rightColumn);
@@ -1373,6 +1373,7 @@ function persistTimeline(timeline) {
             pain: timeline.current.pain,
             tissue: timeline.current.tissue,
             focus: timeline.current.focus,
+            observationNote: timeline.current.observationNote,
             mental: timeline.current.mental,
             cognition: timeline.current.cognition,
             mobility: timeline.current.mobility,
