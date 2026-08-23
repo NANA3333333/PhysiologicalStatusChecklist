@@ -3,10 +3,10 @@
     "loading_order": 90,
     "requires": [],
     "optional": [],
-    "js": "index.js?v=1.16.6",
-    "css": "style.css?v=1.16.6",
+    "js": "index.js?v=1.16.9",
+    "css": "style.css?v=1.16.9",
     "author": "Codex",
-    "version": "1.16.6",
+    "version": "1.16.9",
     "hooks": {
         "activate": "init"
     }

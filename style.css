@@ -93,6 +93,8 @@
 .u4d-report-column-right .u4d-report-section { display: block; min-height: 0; flex: 0 0 auto; }
 .u4d-report-column-right .u4d-checklist-field { display: block; min-height: 0; flex: 0 0 auto; }
 .u4d-report-column-right .u4d-checklist-note { flex: none; }
+.u4d-report-column-right { overflow-x: hidden; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.u4d-report-column-right::-webkit-scrollbar { display: none; }
 .u4d-checklist-grid-section { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
 .u4d-checklist-grid-section > .u4d-report-section-heading { grid-column: 1 / -1; }
 .u4d-checklist-grid-section > .u4d-checklist-field { min-width: 0; }
@@ -161,6 +163,7 @@
 .u4d-date-meta strong { display: block; height: 19px; margin-top: 3px; overflow-x: hidden; overflow-y: auto; font-size: 0.61rem; line-height: 18px; overflow-wrap: anywhere; }
 .u4d-date-ledger { min-height: 0; flex: 1 1 auto; margin-top: 9px; overflow-x: hidden; overflow-y: auto; border: 1px solid #aaa095; background: #fffdf8; }
 .u4d-date-ledger-row { display: grid; grid-template-columns: 38px 108px 115px 205px 65px minmax(0, 1fr); min-height: 48px; border-bottom: 1px solid #c2b7ac; }
+.u4d-date-ledger > .u4d-date-ledger-row[data-day-key] { pointer-events: auto; cursor: pointer; }
 .u4d-date-ledger-row > * { display: flex; min-width: 0; align-items: center; padding: 5px 6px; overflow-wrap: anywhere; border-right: 1px solid #d4c9bf; }
 .u4d-date-ledger-row > *:last-child { border-right: 0; }
 .u4d-date-ledger-row.is-empty > * { min-height: 47px; }

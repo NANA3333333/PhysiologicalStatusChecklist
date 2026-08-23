@@ -27,6 +27,7 @@ let reportZoom = 0.5;
 let dateReportZoom = 0.5;
 let pageScrollLock;
 let inspectionDragEventsBound = false;
+let selectedHistoryDayKey;
 
 function getReportDimensions() {
     const margin = window.innerWidth <= 680 ? 12 : 24;
@@ -128,6 +129,14 @@ function isCheckedValue(value) {
     return Boolean(text && text !== "未记录" && text !== "未复查");
 }
 
+function cloneStatus(status) {
+    return {
+        ...createInitialStatus(),
+        ...(status ?? {}),
+        records: [...(status?.records ?? [])],
+    };
+}
+
 function createDailyCheckin(status) {
     const dayKey = getStoryDayKey(status?.date);
     if (!dayKey) {
@@ -153,6 +162,7 @@ function createDailyCheckin(status) {
         total: DAILY_OBSERVATION_FIELDS.length,
         checks,
         summary,
+        snapshot: cloneStatus(status),
     };
 }
 
@@ -161,11 +171,29 @@ function mergeDailyHistory(...collections) {
     for (const collection of collections) {
         for (const entry of collection ?? []) {
             if (entry?.dayKey) {
-                merged.set(String(entry.dayKey), { ...entry });
+                const previous = merged.get(String(entry.dayKey));
+                merged.set(String(entry.dayKey), {
+                    ...previous,
+                    ...entry,
+                    snapshot: entry.snapshot ? cloneStatus(entry.snapshot) : previous?.snapshot ? cloneStatus(previous.snapshot) : undefined,
+                });
             }
         }
     }
     return [...merged.values()];
+}
+
+function selectHistoryDay(dayKey) {
+    const entry = latestDailyHistory.find(item => item.dayKey === dayKey);
+    if (!entry?.snapshot) {
+        return;
+    }
+
+    selectedHistoryDayKey = dayKey;
+    renderInspectionContent(entry.snapshot);
+    inspectionWindow.hidden = false;
+    inspectionWindow.style.zIndex = "2";
+    dateInspectionWindow.style.zIndex = "1";
 }
 
 function readLauncherPosition() {
@@ -493,7 +521,8 @@ function renderInspectionContent(status) {
     titleBlock.innerHTML = `<span class="u4d-exam-kicker">病例记录 / 人形拟态观察表</span><h2>人形身体检查表</h2><p>当前身体状况、行为反应及损伤记录</p>`;
     const dateBlock = document.createElement("div");
     dateBlock.className = "u4d-case-date-block";
-    dateBlock.innerHTML = `<span>报告状态</span><strong>当前记录</strong>`;
+    const isHistorical = Boolean(selectedHistoryDayKey && getStoryDayKey(status.date) !== getStoryDayKey(latestStatus.date));
+    dateBlock.innerHTML = `<span>报告状态</span><strong>${isHistorical ? "历史记录" : "当前记录"}</strong>`;
     sheetHeader.append(titleBlock, dateBlock);
     sheet.appendChild(sheetHeader);
 
@@ -563,7 +592,7 @@ function renderInspectionContent(status) {
     centerColumn.append(diagramPanel, injurySection, tissueSection, cognitionSection, notesSection);
 
     const rightColumn = document.createElement("div");
-    rightColumn.className = "u4d-report-column u4d-report-column-right";
+    rightColumn.className = "u4d-report-column u4d-report-column-right u4d-scroll-region";
     const physicalSection = makeReportSection("专项检查", "勾选项目");
     physicalSection.append(
         makeChecklistField("精神 / 意识", status.mental, [["清醒", [/清醒/u]], ["警觉", [/警觉|警醒/u]], ["惊恐", [/惊恐|恐惧/u]], ["混乱", [/混乱|昏沉/u]]]),
@@ -677,6 +706,18 @@ function renderDateInspectionContent(history) {
         for (const [index, entry] of reversed.entries()) {
             const row = document.createElement("div");
             row.className = "u4d-date-ledger-row";
+            row.dataset.dayKey = entry.dayKey;
+            row.setAttribute("role", "button");
+            row.tabIndex = 0;
+            row.addEventListener("pointerdown", () => selectHistoryDay(entry.dayKey), { capture: true });
+            row.addEventListener("keydown", event => {
+                if (event.key !== "Enter" && event.key !== " ") {
+                    return;
+                }
+
+                event.preventDefault();
+                selectHistoryDay(entry.dayKey);
+            });
 
             const sequence = document.createElement("span");
             sequence.className = "u4d-date-sequence";
@@ -872,7 +913,11 @@ function routeInspectionPointerDown(event) {
     }
 
     if (handle.dataset.u4dDragSurface === "date") {
-        beginDateInspectionDrag(event, handle);
+        const row = event.target.closest(".u4d-date-ledger-row[data-day-key]");
+        if (row?.dataset.dayKey) {
+            selectHistoryDay(row.dataset.dayKey);
+        }
+        beginDateInspectionDrag(event, handle, row?.dataset.dayKey);
     } else if (handle.dataset.u4dDragSurface === "record") {
         beginInspectionDrag(event, handle);
     }
@@ -896,6 +941,7 @@ function beginInspectionDrag(event, handle) {
         startLeft: rect.left,
         startTop: rect.top,
         handle,
+        moved: false,
     };
     inspectionWindow.style.zIndex = "2";
     dateInspectionWindow.style.zIndex = "1";
@@ -914,6 +960,9 @@ function moveInspection(event) {
     }
 
     event.preventDefault();
+    if (Math.hypot(event.clientX - inspectionDrag.startX, event.clientY - inspectionDrag.startY) > 4) {
+        inspectionDrag.moved = true;
+    }
     inspectionWindow.style.left = `${inspectionDrag.startLeft + event.clientX - inspectionDrag.startX}px`;
     inspectionWindow.style.top = `${inspectionDrag.startTop + event.clientY - inspectionDrag.startY}px`;
 }
@@ -933,7 +982,7 @@ function endInspectionDrag(event) {
     }
 }
 
-function beginDateInspectionDrag(event, handle) {
+function beginDateInspectionDrag(event, handle, dayKey) {
     if (!dateInspectionWindow) {
         return;
     }
@@ -949,6 +998,8 @@ function beginDateInspectionDrag(event, handle) {
         startLeft: rect.left,
         startTop: rect.top,
         handle,
+        dayKey,
+        moved: false,
     };
     inspectionWindow.style.zIndex = "1";
     dateInspectionWindow.style.zIndex = "2";
@@ -967,6 +1018,9 @@ function moveDateInspection(event) {
     }
 
     event.preventDefault();
+    if (Math.hypot(event.clientX - dateInspectionDrag.startX, event.clientY - dateInspectionDrag.startY) > 4) {
+        dateInspectionDrag.moved = true;
+    }
     dateInspectionWindow.style.left = `${dateInspectionDrag.startLeft + event.clientX - dateInspectionDrag.startX}px`;
     dateInspectionWindow.style.top = `${dateInspectionDrag.startTop + event.clientY - dateInspectionDrag.startY}px`;
 }
@@ -1090,6 +1144,7 @@ function setInspectionOpen(open) {
         return;
     }
 
+    selectedHistoryDayKey = undefined;
     renderInspectionContent(latestStatus);
     renderDateInspectionContent(latestDailyHistory);
     inspectionWindow.hidden = false;
