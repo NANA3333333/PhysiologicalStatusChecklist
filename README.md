@@ -140,6 +140,8 @@ Opening the floating launcher shows the latest examination record and the daily 
 
 On phone-sized viewports, the two papers stack vertically in portrait mode and sit side by side in landscape mode. The initial scale is calculated from the available screen area, the paper remains 3:4, and touch dragging plus two-finger pinch zoom are supported. Rotating the device repositions un-dragged papers within the viewport.
 
+For each story day, the first status update must establish every table field. Until the prompt reports that the current table is complete, the model must fill all missing fields in one status line; only then may later turns update a single changed field or `观察补记`. A new story day starts this completeness check again.
+
 ## Developer Install
 
 Place this folder at:
