@@ -24,20 +24,18 @@
     right: 20px;
     bottom: 104px;
     display: grid;
-    grid-template-columns: 30px 1fr;
-    grid-template-rows: 1fr 1fr;
-    width: 86px;
-    height: 56px;
-    padding: 7px 8px 7px 6px;
+    width: 50px;
+    height: 50px;
+    padding: 0;
     overflow: hidden;
     border: 1px solid #b9998e !important;
-    border-radius: 2px !important;
+    border-radius: 50% !important;
     background: #fffaf2 !important;
     color: #6d4a42 !important;
     box-shadow: 0 8px 18px rgba(81, 61, 52, 0.16) !important;
     cursor: grab;
-    font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace !important;
-    text-align: left;
+    font-family: system-ui, sans-serif !important;
+    text-align: center;
     touch-action: none;
     transition: border-color 160ms ease, box-shadow 160ms ease !important;
 }
@@ -46,11 +44,9 @@
 .u4d-floating-launcher.is-dragging { cursor: grabbing; }
 .u4d-floating-launcher.is-open { opacity: 0; pointer-events: none; }
 .u4d-launcher-orbit, .u4d-launcher-signal { display: none; }
-.u4d-launcher-icon { position: relative; z-index: 1; display: grid; grid-row: 1 / -1; place-items: center; width: 29px; height: 40px; border-right: 1px solid #d8c1b6; color: #a95448; font-size: 19px; }
-.u4d-launcher-icon b { position: absolute; right: 0; bottom: 0; display: grid; width: 12px; height: 12px; place-items: center; border-radius: 50%; background: #b74b40; color: #fff; font-family: system-ui, sans-serif; font-size: 10px; line-height: 1; }
-.u4d-launcher-copy { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; min-width: 0; padding-left: 7px; }
-.u4d-launcher-copy strong { color: #70443c; font-size: 0.66rem; letter-spacing: 0.1em; }
-.u4d-launcher-copy small { color: #ad7568; font-size: 0.5rem; font-weight: 800; letter-spacing: 0.06em; }
+.u4d-launcher-icon { position: relative; z-index: 1; display: grid; width: 100%; height: 100%; place-items: center; color: #a95448; font-size: 22px; line-height: 1; }
+.u4d-launcher-icon i { display: block; line-height: 1; }
+.u4d-launcher-copy { display: none; }
 
 .u4d-inspection-root { position: fixed; z-index: 2147483647; inset: 0; pointer-events: none; color: #111; font-family: "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif; }
 .u4d-inspection-window { position: fixed; top: 0; left: 0; display: block; width: 420px; height: 560px; overflow: visible; background: transparent; pointer-events: auto; transform: none; }
@@ -292,5 +288,5 @@
 }
 
 @media (max-width: 680px) {
-    .u4d-floating-launcher { right: 10px; bottom: 82px; width: 78px; height: 52px; }
+    .u4d-floating-launcher { right: 10px; bottom: 82px; width: 48px; height: 48px; }
 }

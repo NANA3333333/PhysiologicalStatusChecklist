@@ -277,11 +277,9 @@ function createFloatingLauncher() {
     floatingLauncher.type = "button";
     floatingLauncher.className = "u4d-floating-launcher";
     floatingLauncher.setAttribute("aria-label", "打开人形拟态检查表");
+    floatingLauncher.title = "打开生理状态检查表";
     floatingLauncher.innerHTML = `
-        <span class="u4d-launcher-orbit" aria-hidden="true"></span>
-        <span class="u4d-launcher-icon" aria-hidden="true"><i class="fa-solid fa-person"></i><b>+</b></span>
-        <span class="u4d-launcher-copy"><strong>EXAM</strong><small>U4D</small></span>
-        <span class="u4d-launcher-signal" aria-hidden="true"></span>`;
+        <span class="u4d-launcher-icon" aria-hidden="true"><i class="fa-solid fa-person"></i></span>`;
     floatingLauncher.addEventListener("pointerdown", beginLauncherDrag);
     floatingLauncher.addEventListener("pointermove", moveLauncher);
     floatingLauncher.addEventListener("pointerup", endLauncherDrag);
