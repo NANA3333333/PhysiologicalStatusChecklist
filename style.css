@@ -333,4 +333,27 @@
 
 @media (max-width: 680px) {
     .u4d-floating-launcher { right: 10px; bottom: 82px; width: 48px; height: 48px; }
+    .u4d-exam-sheet { padding: 11px 10px 9px; }
+    .u4d-date-sheet { padding: 12px 10px 9px; }
+    .u4d-case-header { gap: 8px; padding-bottom: 5px; }
+    .u4d-case-date-block { min-width: 82px; padding-left: 6px; }
+    .u4d-report-meta,
+    .u4d-date-meta { margin-top: 5px; }
+    .u4d-report-meta-cell,
+    .u4d-date-meta > div { min-height: 34px; padding: 4px; }
+    .u4d-report-form { margin-top: 5px; }
+    .u4d-report-section-heading { min-height: 20px; padding: 3px 4px 2px; }
+    .u4d-report-section-heading strong { font-size: 0.56rem; }
+    .u4d-report-section-heading small { font-size: 0.36rem; }
+    .u4d-checklist-field,
+    .u4d-lined-field { padding-right: 4px; padding-left: 4px; }
+    .u4d-checkbox-option { display: flex; align-items: flex-start; overflow-wrap: anywhere; word-break: break-word; white-space: normal; }
+    .u4d-date-ledger-row { grid-template-columns: 18px 52px 58px 88px 38px minmax(0, 1fr); min-height: 42px; }
+    .u4d-date-ledger-row > * { padding: 4px 3px; }
+    .u4d-date-ledger-row.is-empty > * { min-height: 41px; }
+    .u4d-date-ledger { margin-top: 5px; }
+    .u4d-date-note { margin-top: 5px; }
+    .u4d-date-note strong,
+    .u4d-date-note p { padding: 4px 5px; }
+    .u4d-exam-footer { padding-top: 4px; }
 }

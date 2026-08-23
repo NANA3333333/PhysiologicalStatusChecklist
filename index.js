@@ -7,6 +7,24 @@ const STATUS_METADATA_KEY = "u4d_status_state";
 const LAUNCHER_ID = "u4d-status-launcher";
 const INSPECTION_ID = "u4d-inspection-root";
 const LAUNCHER_POSITION_KEY = "u4d_status_launcher_position";
+const MOBILE_BREAKPOINT = 680;
+
+function getInitialReportZoom() {
+    if (typeof window === "undefined" || window.innerWidth > MOBILE_BREAKPOINT) {
+        return 0.5;
+    }
+
+    const baseWidth = Math.min(840, Math.max(300, window.innerWidth - 24));
+    const mobileFitZoom = window.innerWidth > window.innerHeight
+        ? Math.min(
+            (window.innerWidth - 36) / (baseWidth * 2 + 18),
+            (window.innerHeight - 20) / (baseWidth * 4 / 3),
+        )
+        : (window.innerHeight - 36) / (baseWidth * 8 / 3 + 12);
+    return Math.min(0.75, Math.max(0.25, Math.round(mobileFitZoom * 100) / 100));
+}
+
+const INITIAL_REPORT_ZOOM = getInitialReportZoom();
 let chatObserver;
 let scanScheduled = false;
 let floatingLauncher;
@@ -23,14 +41,31 @@ let dateInspectionDrag;
 let inspectionHasCustomPosition = false;
 let dateInspectionHasCustomPosition = false;
 let suppressLauncherClick = false;
-let reportZoom = 0.5;
-let dateReportZoom = 0.5;
+let reportZoom = INITIAL_REPORT_ZOOM;
+let dateReportZoom = INITIAL_REPORT_ZOOM;
 let pageScrollLock;
 let inspectionDragEventsBound = false;
 let selectedHistoryDayKey;
+let inspectionPointers = new Map();
+let dateInspectionPointers = new Map();
+let inspectionPinch;
+let dateInspectionPinch;
+let viewportMode = getViewportMode();
+
+function getViewportMode() {
+    if (!isMobileViewport()) {
+        return "desktop";
+    }
+
+    return window.innerWidth > window.innerHeight ? "mobile-landscape" : "mobile-portrait";
+}
+
+function isMobileViewport() {
+    return window.innerWidth <= MOBILE_BREAKPOINT;
+}
 
 function getReportDimensions() {
-    const margin = window.innerWidth <= 680 ? 12 : 24;
+    const margin = isMobileViewport() ? 12 : 24;
     const baseWidth = Math.min(840, Math.max(300, window.innerWidth - margin * 2));
     const baseHeight = baseWidth * 4 / 3;
     return {
@@ -42,7 +77,7 @@ function getReportDimensions() {
 }
 
 function getDateReportDimensions() {
-    const margin = window.innerWidth <= 680 ? 12 : 24;
+    const margin = isMobileViewport() ? 12 : 24;
     const baseWidth = Math.min(840, Math.max(300, window.innerWidth - margin * 2));
     const baseHeight = baseWidth * 4 / 3;
     return {
@@ -867,6 +902,72 @@ function attachDateInspectionDragHandle(handle) {
     handle.dataset.u4dDragSurface = "date";
 }
 
+function getPointerDistance(points) {
+    const [first, second] = [...points.values()];
+    if (!first || !second) {
+        return 0;
+    }
+
+    return Math.hypot(second.x - first.x, second.y - first.y);
+}
+
+function beginInspectionPinch(sheetType, handle) {
+    const pointers = sheetType === "date" ? dateInspectionPointers : inspectionPointers;
+    const distance = getPointerDistance(pointers);
+    if (distance < 1) {
+        return;
+    }
+
+    if (sheetType === "date") {
+        dateInspectionDrag = undefined;
+        dateInspectionPinch = { startDistance: distance, startZoom: dateReportZoom, handle };
+    } else {
+        inspectionDrag = undefined;
+        inspectionPinch = { startDistance: distance, startZoom: reportZoom, handle };
+    }
+    handle.classList.remove("is-dragging");
+}
+
+function updateInspectionPinch(sheetType, event) {
+    const pointers = sheetType === "date" ? dateInspectionPointers : inspectionPointers;
+    const pinch = sheetType === "date" ? dateInspectionPinch : inspectionPinch;
+    if (!pinch || !pointers.has(event.pointerId)) {
+        return false;
+    }
+
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const distance = getPointerDistance(pointers);
+    if (distance < 1) {
+        return true;
+    }
+
+    const nextZoom = Math.min(1.35, Math.max(0.25, Math.round((pinch.startZoom * distance / pinch.startDistance) * 100) / 100));
+    if (sheetType === "date") {
+        dateReportZoom = nextZoom;
+        applyDateReportZoom();
+    } else {
+        reportZoom = nextZoom;
+        applyReportZoom();
+    }
+    event.preventDefault();
+    return true;
+}
+
+function trackInspectionPointer(sheetType, event) {
+    if (event.pointerType !== "touch") {
+        return false;
+    }
+
+    const pointers = sheetType === "date" ? dateInspectionPointers : inspectionPointers;
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointers.size >= 2) {
+        beginInspectionPinch(sheetType, event.target.closest(".u4d-report-stack"));
+        event.preventDefault();
+        return true;
+    }
+    return false;
+}
+
 function bindInspectionDragEvents() {
     if (inspectionDragEventsBound) {
         return;
@@ -881,6 +982,7 @@ function bindInspectionDragEvents() {
     window.addEventListener("pointercancel", endInspectionDrag, { capture: true });
     window.addEventListener("pointercancel", endDateInspectionDrag, { capture: true });
     window.addEventListener("click", routeInspectionClick, { capture: true });
+    window.addEventListener("resize", handleInspectionViewportResize, { passive: true });
 }
 
 function routeInspectionClick(event) {
@@ -917,12 +1019,18 @@ function routeInspectionPointerDown(event) {
     }
 
     if (handle.dataset.u4dDragSurface === "date") {
+        if (trackInspectionPointer("date", event)) {
+            return;
+        }
         const row = event.target.closest(".u4d-date-ledger-row[data-day-key]");
         if (row?.dataset.dayKey) {
             selectHistoryDay(row.dataset.dayKey);
         }
         beginDateInspectionDrag(event, handle, row?.dataset.dayKey);
     } else if (handle.dataset.u4dDragSurface === "record") {
+        if (trackInspectionPointer("record", event)) {
+            return;
+        }
         beginInspectionDrag(event, handle);
     }
 }
@@ -959,6 +1067,12 @@ function beginInspectionDrag(event, handle) {
 }
 
 function moveInspection(event) {
+    if (event.pointerType === "touch" && inspectionPointers.has(event.pointerId)) {
+        inspectionPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+    if (updateInspectionPinch("record", event)) {
+        return;
+    }
     if (!inspectionDrag || event.pointerId !== inspectionDrag.pointerId) {
         return;
     }
@@ -972,6 +1086,15 @@ function moveInspection(event) {
 }
 
 function endInspectionDrag(event) {
+    if (inspectionPointers.has(event.pointerId)) {
+        inspectionPointers.delete(event.pointerId);
+        if (inspectionPinch) {
+            if (inspectionPointers.size < 2) {
+                inspectionPinch = undefined;
+            }
+            return;
+        }
+    }
     if (!inspectionDrag || event.pointerId !== inspectionDrag.pointerId) {
         return;
     }
@@ -1017,6 +1140,12 @@ function beginDateInspectionDrag(event, handle, dayKey) {
 }
 
 function moveDateInspection(event) {
+    if (event.pointerType === "touch" && dateInspectionPointers.has(event.pointerId)) {
+        dateInspectionPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+    if (updateInspectionPinch("date", event)) {
+        return;
+    }
     if (!dateInspectionDrag || event.pointerId !== dateInspectionDrag.pointerId) {
         return;
     }
@@ -1030,6 +1159,15 @@ function moveDateInspection(event) {
 }
 
 function endDateInspectionDrag(event) {
+    if (dateInspectionPointers.has(event.pointerId)) {
+        dateInspectionPointers.delete(event.pointerId);
+        if (dateInspectionPinch) {
+            if (dateInspectionPointers.size < 2) {
+                dateInspectionPinch = undefined;
+            }
+            return;
+        }
+    }
     if (!dateInspectionDrag || event.pointerId !== dateInspectionDrag.pointerId) {
         return;
     }
@@ -1047,6 +1185,27 @@ function endDateInspectionDrag(event) {
 function getDefaultInspectionPositions() {
     const record = getReportDimensions();
     const date = getDateReportDimensions();
+
+    if (isMobileViewport()) {
+        if (getViewportMode() === "mobile-landscape") {
+            const gap = 18;
+            const combinedWidth = record.width + gap + date.width;
+            const left = Math.max(8, (window.innerWidth - combinedWidth) / 2);
+            const top = Math.max(10, (window.innerHeight - Math.max(record.height, date.height)) / 2);
+            return {
+                record: { left, top },
+                date: { left: left + record.width + gap, top },
+            };
+        }
+
+        const left = Math.max(8, (window.innerWidth - record.width) / 2);
+        const top = Math.max(10, (window.innerHeight - record.height - date.height - 12) / 2);
+        return {
+            record: { left, top },
+            date: { left: Math.max(8, (window.innerWidth - date.width) / 2), top: top + record.height + 12 },
+        };
+    }
+
     const gap = 18;
     const combinedWidth = record.width + gap + date.width;
     const fitsSideBySide = combinedWidth <= window.innerWidth - 24;
@@ -1090,6 +1249,43 @@ function positionDateInspectionWindow() {
     dateInspectionWindow.style.top = `${Math.round(position.top)}px`;
     dateInspectionWindow.style.transform = "none";
     applyDateReportZoom();
+}
+
+function clampInspectionWindowToViewport(target) {
+    if (!target) {
+        return;
+    }
+
+    const rect = target.getBoundingClientRect();
+    const position = clampPosition(rect.left, rect.top, rect.width, rect.height, isMobileViewport() ? 8 : 12);
+    target.style.left = `${Math.round(position.left)}px`;
+    target.style.top = `${Math.round(position.top)}px`;
+}
+
+function handleInspectionViewportResize() {
+    const nextViewportMode = getViewportMode();
+    if (nextViewportMode !== viewportMode && !inspectionHasCustomPosition && !dateInspectionHasCustomPosition) {
+        reportZoom = getInitialReportZoom();
+        dateReportZoom = reportZoom;
+    }
+    viewportMode = nextViewportMode;
+    applySavedLauncherPosition();
+    if (!inspectionRoot) {
+        return;
+    }
+
+    if (!inspectionHasCustomPosition) {
+        positionInspectionWindow();
+    } else {
+        applyReportZoom();
+        clampInspectionWindowToViewport(inspectionWindow);
+    }
+    if (!dateInspectionHasCustomPosition) {
+        positionDateInspectionWindow();
+    } else {
+        applyDateReportZoom();
+        clampInspectionWindowToViewport(dateInspectionWindow);
+    }
 }
 
 function createInspectionWindow() {

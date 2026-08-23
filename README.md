@@ -138,6 +138,8 @@ The paper table also accepts observation fields: `观察重点`, `精神状态`,
 
 Opening the floating launcher shows the latest examination record and the daily check-in table together. Click a recorded date row to load that day's concrete examination record; opening the launcher again restores the latest record. Each paper can be dragged, proportionally zoomed, and closed independently. The mouse wheel scrolls a field when that fixed field is overflowing; elsewhere on that paper, the same wheel zooms the whole paper. Scrollbars remain hidden. Long field text, permanent records, and check-in history therefore stay on their original single sheets without continuation pages or data loss. All status and daily history data live only in the active chat's `chat_metadata`; the extension does not create a separate database.
 
+On phone-sized viewports, the two papers stack vertically in portrait mode and sit side by side in landscape mode. The initial scale is calculated from the available screen area, the paper remains 3:4, and touch dragging plus two-finger pinch zoom are supported. Rotating the device repositions un-dragged papers within the viewport.
+
 ## Developer Install
 
 Place this folder at:
