@@ -29,6 +29,13 @@ assert.match(prompt, /不得只写勾选结论/u);
 assert.match(prompt, /表格尚未填满/u);
 assert.match(prompt, /自理/u);
 assert.match(prompt, /不能只更新观察补记/u);
+assert.match(prompt, /医生书写病历或查体记录的口吻/u);
+assert.match(prompt, /客观、克制、严谨、可核验/u);
+assert.match(prompt, /不得臆造体温/u);
+assert.match(prompt, /禁止使用聊天化、情绪化/u);
+assert.match(prompt, /原话不能替代查体结论/u);
+assert.match(prompt, /解剖部位、损伤类型/u);
+assert.match(prompt, /日期\/阶段 \+ 事件 \+ 已确认结果/u);
 
 const incomplete = getMissingStatusFields({ date: "第2天·夜", growth: "幼体", form: "少年拟态", body: "清醒", observationNote: "出现异常" });
 assert.ok(incomplete.includes("自理"));
