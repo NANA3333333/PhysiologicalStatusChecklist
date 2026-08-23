@@ -1,0 +1,105 @@
+export const STATUS_PROMPT_KEY = "u4d_status_panel_prompt";
+
+const STATUS_FIELDS = [
+    ["日期", "date"],
+    ["成长周期", "growth"],
+    ["形态", "form"],
+    ["身体", "body"],
+    ["体温", "temperature"],
+    ["呼吸", "breathing"],
+    ["循环", "circulation"],
+    ["能量", "energy"],
+    ["损伤", "injury"],
+    ["驱动", "drive"],
+    ["疼痛", "pain"],
+    ["组织", "tissue"],
+    ["观察重点", "focus"],
+    ["精神", "mental"],
+    ["认知处理", "cognition"],
+    ["行动", "mobility"],
+    ["体位", "posture"],
+    ["活动量", "activity"],
+    ["应激", "stress"],
+    ["触碰耐受", "touchTolerance"],
+    ["感官", "senses"],
+    ["沟通", "communication"],
+    ["摄入", "intake"],
+    ["休眠", "rest"],
+    ["学习", "learning"],
+    ["四维异常", "anomaly"],
+    ["风险", "risk"],
+    ["处置", "care"],
+    ["清洁状态", "hygiene"],
+    ["分泌情况", "secretion"],
+    ["排泄情况", "excretion"],
+    ["肌张力", "muscleTone"],
+    ["三维稳定", "stability"],
+    ["自理", "selfCare"],
+    ["边界", "boundary"],
+    ["适应", "adaptation"],
+];
+
+function isRecordedValue(value) {
+    const text = String(value ?? "").trim();
+    return text && text !== "未记录";
+}
+
+function formatSnapshotValue(value) {
+    return String(value ?? "").trim().replaceAll("|", "/");
+}
+
+export function formatStatusSnapshot(status = {}) {
+    const fields = STATUS_FIELDS
+        .filter(([, key]) => isRecordedValue(status[key]))
+        .map(([label, key]) => `${label}=${formatSnapshotValue(status[key])}`);
+    const records = Array.isArray(status.records)
+        ? status.records.filter(record => String(record ?? "").trim()).map(formatSnapshotValue)
+        : [];
+
+    return {
+        fields: fields.length ? fields.join(" | ") : "暂无已记录状态",
+        records: records.length ? records.map((record, index) => `${String(index + 1).padStart(2, "0")}. ${record}`).join("\n") : "暂无永久记录",
+    };
+}
+
+export function buildStatusPrompt(status = {}) {
+    const snapshot = formatStatusSnapshot(status);
+
+    return `[动态状态插件协议]
+这段规则由状态面板插件自动注入，不属于角色卡正文。你只负责正常进行角色扮演和维护状态协议；前端会解析协议、合并当前状态、保存永久记录并渲染检查表。
+
+一、输出原则
+1. 正文照常自然回复，不要解释状态系统，不要为了填表捏造剧情事实。
+2. 状态不是每轮都必须输出。只有当前状态发生变化、出现新的可记录事实、故事跨入新的一天，或尚未建立基础快照时才输出状态行。
+3. 如果本轮没有任何状态变化，可以完全省略状态行。
+4. 状态行必须是回复最后一个非空行，且只能有一行；不要输出 HTML、CSS、<div>、<style>、Markdown 代码块或状态栏标题。
+
+二、当前状态字段
+可使用以下字段名。它们是“当前值”，只写本轮首次出现或发生变化的字段；省略字段由插件沿用之前的值：
+日期、成长周期、形态、身体、体温、呼吸、循环、能量、损伤、驱动、疼痛、组织、观察重点、精神、认知处理、行动、体位、活动量、应激、触碰耐受、感官、沟通、摄入、休眠、学习、四维异常、风险、处置、清洁状态、分泌情况、排泄情况、肌张力、三维稳定、自理、边界、适应。
+
+三、状态更新规则
+1. 第一次建立状态时，优先填写日期、成长周期、形态、身体，以及正文中明确可观察的其他字段。
+2. 对故事时间保持强感知。日期统一写成“第N天·时段”（已有明确年月日时可沿用该纪年）；同一天只改变时段不会换表，跨过午夜、明确出现“次日/翌日/第二天”或发生跨日时间跳跃时，必须更新日期，即使没有其他事件也不能省略状态行。
+3. 插件把跨日视为一张新的每日检查表：会清空昨天的身体、摄入、休眠、排泄、应激、处置等短期观察，只保留成长周期、形态和永久记录。因此换日状态行必须重新填写当日仍可确认的基础状态；未复查的项目不要照抄昨日结论。
+4. 损伤也属于每日复查项。换日时仍未痊愈的损伤必须在同一条换日状态行中重新写明；完全消失时写“无明显损伤”，不确定时写“未复查”，不要让旧伤凭空痊愈。
+5. 当前状态是短期快照，不要把地点、好感度、依恋度、人性值或其他未定义数值塞进字段。
+6. 控制记录长度：日期不超过16字；勾选类字段不超过16字；身体、驱动、观察重点、处置等自由字段不超过36字；损伤不超过60字。只写临床式摘要，不写完整叙事句或重复原因。
+7. 不要因为这段规则被注入就强行改变角色行为；所有状态变化必须有剧情、对话或明确叙述依据。
+
+四、永久记录
+发生了不可逆、值得长期保留的成长、学习、形态、记忆、关系或因果事实时，使用“记录+=”。它只追加，跨日不会清空，不能覆盖或删除旧记录。也可以使用“因果+=”“已学会+=”“形态库+=”“记忆+=”“关键事件+=”；这些都会进入永久档案。每条永久记录不超过60字，一个事实一条；多个独立事实可在同一状态行中分别使用多个“记录+=”。
+
+五、唯一格式
+[STATUS: 字段=值 | 字段=值 | 记录+=新的永久事实]
+字段值不得包含半角竖线 |。一条状态行只放本轮变化的字段；不要把上面所有字段重复输出。
+
+换日示例：
+[STATUS: 日期=第3天·清晨 | 身体=清醒，体温偏低 | 损伤=左上肢：咬伤未愈 | 摄入=未进食 | 休眠=浅眠]
+
+当前已知状态快照（由插件从本聊天已出现的状态行合并）：
+${snapshot.fields}
+
+当前永久记录（由插件持久保存，只追加）：
+${snapshot.records}`;
+}

@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>人形身体检查表预览</title>
+    <link rel="stylesheet" href="./style.css">
+    <style>
+        body { margin: 0; min-height: 100vh; background: #f6f1e9; color: #3d3935; font-family: "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif; }
+        #chat { padding: 20px; }
+    </style>
+</head>
+<body>
+    <main id="chat"><p>实体在安静的房间里观察着光线的变化。</p></main>
+
+    <button id="u4d-status-launcher" class="u4d-floating-launcher" type="button" aria-label="打开人形身体检查表">
+        <span class="u4d-launcher-icon" aria-hidden="true"><i class="fa-solid fa-person"></i><b>+</b></span>
+        <span class="u4d-launcher-copy"><strong>EXAM</strong><small>U4D</small></span>
+    </button>
+
+    <div id="u4d-inspection-root" class="u4d-inspection-root" hidden aria-hidden="true">
+        <section class="u4d-inspection-window" role="dialog" aria-label="人形身体检查表">
+            <div class="u4d-inspection-content">
+                <div class="u4d-report-stack" style="--u4d-scale: 0.5;">
+                <div class="u4d-exam-sheet">
+                    <button class="u4d-sheet-close" type="button" aria-label="关闭检查表">×</button>
+                    <header class="u4d-case-header">
+                        <div class="u4d-case-title-block"><span class="u4d-exam-kicker">病例记录 / 人形拟态观察表</span><h2>人形身体检查表</h2><p>当前身体状况、行为反应及损伤记录</p></div>
+                        <div class="u4d-case-date-block"><span>报告状态</span><strong>当前记录</strong></div>
+                    </header>
+                    <div class="u4d-report-meta">
+                        <div class="u4d-report-meta-cell"><span>受检对象</span><strong>未知实体</strong></div>
+                        <div class="u4d-report-meta-cell"><span>记录日期</span><strong>第 02 天 · 夜间</strong></div>
+                        <div class="u4d-report-meta-cell"><span>成长周期</span><strong>亚幼体 · 阶段 2</strong></div>
+                        <div class="u4d-report-meta-cell"><span>当前形态</span><strong>16 岁消瘦少年拟态</strong></div>
+                    </div>
+
+                    <div class="u4d-report-form">
+                        <div class="u4d-report-column u4d-report-column-left">
+                            <section class="u4d-report-section">
+                                <div class="u4d-report-section-heading"><strong>基本信息</strong><small>一般观察</small></div>
+                                <div class="u4d-lined-field"><strong>身体状态</strong><div class="u4d-lined-value">体温稳定；左侧咬合控制变差。</div><div class="u4d-lined-value"></div></div>
+                                <div class="u4d-checklist-field"><strong>体温调节</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>正常</span><span class="u4d-checkbox-option"><i></i>偏低</span><span class="u4d-checkbox-option"><i></i>偏高</span><span class="u4d-checkbox-option"><i></i>异常</span></div><div class="u4d-checklist-note">体温稳定，可自行调节。</div></div>
+                                <div class="u4d-checklist-field"><strong>呼吸状态</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>平稳</span><span class="u4d-checkbox-option"><i></i>急促</span><span class="u4d-checkbox-option"><i></i>浅弱</span><span class="u4d-checkbox-option"><i></i>异常</span></div><div class="u4d-checklist-note">呼吸平稳。</div></div>
+                                <div class="u4d-checklist-field"><strong>循环反应</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>稳定</span><span class="u4d-checkbox-option"><i></i>偏快</span><span class="u4d-checkbox-option"><i></i>偏弱</span><span class="u4d-checkbox-option"><i></i>异常</span></div><div class="u4d-checklist-note">循环稳定。</div></div>
+                                <div class="u4d-checklist-field"><strong>能量储备</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>充足</span><span class="u4d-checkbox-option is-checked"><i></i>不足</span><span class="u4d-checkbox-option"><i></i>枯竭</span><span class="u4d-checkbox-option"><i></i>恢复中</span></div><div class="u4d-checklist-note">能量储备不足。</div></div>
+                                <div class="u4d-lined-field"><strong>当前驱动</strong><div class="u4d-lined-value">贴近热源，确认拒绝是否意味着离开。</div><div class="u4d-lined-value"></div></div>
+                                <div class="u4d-lined-field"><strong>观察重点</strong><div class="u4d-lined-value">确认是否能接受拒绝。</div><div class="u4d-lined-value"></div></div>
+                            </section>
+                            <section class="u4d-report-section">
+                                <div class="u4d-report-section-heading"><strong>边界与处置</strong><small>反应 / 处置</small></div>
+                                <div class="u4d-checklist-field"><strong>疼痛反应</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>无明显</span><span class="u4d-checkbox-option is-checked"><i></i>轻微</span><span class="u4d-checkbox-option"><i></i>明显</span><span class="u4d-checkbox-option is-checked"><i></i>刺激性</span></div><div class="u4d-checklist-note">触碰伤处时回避。</div></div>
+                                <div class="u4d-checklist-field"><strong>风险评估</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>低风险</span><span class="u4d-checkbox-option is-checked"><i></i>需观察</span><span class="u4d-checkbox-option"><i></i>高风险</span><span class="u4d-checkbox-option"><i></i>不可接触</span></div><div class="u4d-checklist-note">需持续观察刺激反应。</div></div>
+                                <div class="u4d-lined-field"><strong>处置记录</strong><div class="u4d-lined-value">清洁伤口，观察出血变化。</div><div class="u4d-lined-value"></div></div>
+                            </section>
+                            <section class="u4d-report-section">
+                                <div class="u4d-report-section-heading"><strong>医嘱 / 备注</strong><small>补充记录</small></div>
+                                <div class="u4d-lined-field"><strong>观察补记</strong><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div></div>
+                            </section>
+                        </div>
+
+                        <div class="u4d-report-column u4d-report-column-center">
+                            <section class="u4d-report-section">
+                                <div class="u4d-report-section-heading"><strong>身体轮廓与损伤定位</strong><small>红色 × = 已记录损伤 / 浅色 × = 预制标记位</small></div>
+                                <div class="u4d-human-figure">
+                                    <div class="u4d-figure-map">
+                                        <img class="u4d-human-figure-image" src="./assets/human-outline.png" alt="人物正面轮廓图">
+                                        <div class="u4d-injury-layer" aria-label="损伤标记">
+                                            <span class="u4d-injury-marker head"><b aria-hidden="true">×</b><small></small></span>
+                                            <span class="u4d-injury-marker neck"><b aria-hidden="true">×</b><small></small></span>
+                                            <span class="u4d-injury-marker left-arm is-active"><b aria-hidden="true">×</b><small>左上肢 · 旧伤裂口</small></span>
+                                            <span class="u4d-injury-marker right-arm"><b aria-hidden="true">×</b><small></small></span>
+                                            <span class="u4d-injury-marker torso"><b aria-hidden="true">×</b><small></small></span>
+                                            <span class="u4d-injury-marker left-leg"><b aria-hidden="true">×</b><small></small></span>
+                                            <span class="u4d-injury-marker right-leg is-active"><b aria-hidden="true">×</b><small>右下肢 · 擦伤</small></span>
+                                        </div>
+                                    </div>
+                                    <span class="u4d-figure-caption u4d-figure-caption-head">正面 / 人形拟态</span>
+                                    <span class="u4d-figure-caption u4d-figure-caption-foot">预制损伤标记位</span>
+                                </div>
+                                <p class="u4d-diagram-note">角色只需在损伤字段中写部位与伤情，前端会自动激活对应的预制 ×。</p>
+                            </section>
+                            <section class="u4d-report-section">
+                                <div class="u4d-report-section-heading"><strong>损伤记录</strong><small>当前伤情</small></div>
+                                <div class="u4d-lined-field"><strong>当前损伤</strong><div class="u4d-lined-value">左上肢旧伤裂口，右下肢擦伤，轻度出血。</div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div></div>
+                            </section>
+                            <section class="u4d-report-section">
+                                <div class="u4d-report-section-heading"><strong>组织与异常</strong><small>外观 / 四维反应</small></div>
+                                <div class="u4d-checklist-field"><strong>皮肤 / 组织</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>完整</span><span class="u4d-checkbox-option"><i></i>红肿</span><span class="u4d-checkbox-option is-checked"><i></i>裂伤</span><span class="u4d-checkbox-option is-checked"><i></i>异常修复</span></div><div class="u4d-checklist-note">裂口边缘出现异常修复。</div></div>
+                                <div class="u4d-checklist-field"><strong>四维异常</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>无</span><span class="u4d-checkbox-option is-checked"><i></i>轻微</span><span class="u4d-checkbox-option"><i></i>明显</span><span class="u4d-checkbox-option"><i></i>扩散</span></div><div class="u4d-checklist-note">肢端偶发局部回弹。</div></div>
+                            </section>
+                            <section class="u4d-report-section">
+                                <div class="u4d-report-section-heading"><strong>认知与学习</strong><small>当前处理能力</small></div>
+                                <div class="u4d-checklist-field"><strong>认知处理</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>清楚</span><span class="u4d-checkbox-option"><i></i>迟缓</span><span class="u4d-checkbox-option"><i></i>混乱</span><span class="u4d-checkbox-option is-checked"><i></i>非人类逻辑</span></div><div class="u4d-checklist-note">依照气味和威胁处理信息。</div></div>
+                                <div class="u4d-checklist-field"><strong>学习 / 记忆</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>未出现</span><span class="u4d-checkbox-option is-checked"><i></i>进行中</span><span class="u4d-checkbox-option"><i></i>已形成</span><span class="u4d-checkbox-option"><i></i>反复</span></div><div class="u4d-checklist-note">正在建立拒绝与停止的联系。</div></div>
+                            </section>
+                            <section class="u4d-report-section">
+                                <div class="u4d-report-section-heading"><strong>主诉 / 自由记录</strong><small>横线补记</small></div>
+                                <div class="u4d-lined-field"><strong>补充记录</strong><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div></div>
+                            </section>
+                        </div>
+
+                        <div class="u4d-report-column u4d-report-column-right">
+                            <section class="u4d-report-section">
+                                <div class="u4d-report-section-heading"><strong>专项检查</strong><small>勾选项目</small></div>
+                                <div class="u4d-checklist-field"><strong>精神 / 意识</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>清醒</span><span class="u4d-checkbox-option is-checked"><i></i>警觉</span><span class="u4d-checkbox-option is-checked"><i></i>惊恐</span><span class="u4d-checkbox-option"><i></i>混乱</span></div><div class="u4d-checklist-note">清醒，对声音有反应。</div></div>
+                                <div class="u4d-checklist-field"><strong>行动能力</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>可站立</span><span class="u4d-checkbox-option"><i></i>可行走</span><span class="u4d-checkbox-option"><i></i>可爬行</span><span class="u4d-checkbox-option is-checked"><i></i>受限</span></div><div class="u4d-checklist-note">可独立站立，步态不稳。</div></div>
+                                <div class="u4d-checklist-field"><strong>感官状态</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>正常</span><span class="u4d-checkbox-option is-checked"><i></i>敏锐</span><span class="u4d-checkbox-option"><i></i>迟钝</span><span class="u4d-checkbox-option is-checked"><i></i>异常刺激反应</span></div><div class="u4d-checklist-note">听觉灵敏，畏强光。</div></div>
+                                <div class="u4d-checklist-field"><strong>沟通 / 表达</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>无语言</span><span class="u4d-checkbox-option"><i></i>声音</span><span class="u4d-checkbox-option is-checked"><i></i>短句</span><span class="u4d-checkbox-option"><i></i>流畅</span></div><div class="u4d-checklist-note">仅能复述短句。</div></div>
+                                <div class="u4d-checklist-field"><strong>摄入情况</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>正常</span><span class="u4d-checkbox-option is-checked"><i></i>少量</span><span class="u4d-checkbox-option is-checked"><i></i>拒绝</span><span class="u4d-checkbox-option"><i></i>异常</span></div><div class="u4d-checklist-note">少量饮水，拒绝固体食物。</div></div>
+                                <div class="u4d-checklist-field"><strong>休眠情况</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>正常</span><span class="u4d-checkbox-option is-checked"><i></i>浅眠</span><span class="u4d-checkbox-option"><i></i>未休眠</span><span class="u4d-checkbox-option is-checked"><i></i>易醒</span></div><div class="u4d-checklist-note">浅眠，易被声音唤醒。</div></div>
+                            </section>
+                            <section class="u4d-report-section">
+                                <div class="u4d-report-section-heading"><strong>形态与适应</strong><small>成长记录</small></div>
+                                <div class="u4d-checklist-field"><strong>三维稳定度</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>稳定</span><span class="u4d-checkbox-option"><i></i>不稳定</span><span class="u4d-checkbox-option is-checked"><i></i>局部异常</span></div><div class="u4d-checklist-note">人形拟态稳定，局部组织仍有回弹。</div></div>
+                                <div class="u4d-checklist-field"><strong>自理能力</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>可独立</span><span class="u4d-checkbox-option is-checked"><i></i>部分</span><span class="u4d-checkbox-option"><i></i>无法</span></div><div class="u4d-checklist-note">可独立进食，无法完成清洁。</div></div>
+                                <div class="u4d-checklist-field"><strong>边界反应</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>可停止</span><span class="u4d-checkbox-option is-checked"><i></i>持续试探</span><span class="u4d-checkbox-option"><i></i>无法理解</span></div><div class="u4d-checklist-note">被拒绝后短暂停止，仍会观察对方。</div></div>
+                                <div class="u4d-checklist-field"><strong>社会适应</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>良好</span><span class="u4d-checkbox-option is-checked"><i></i>部分</span><span class="u4d-checkbox-option"><i></i>不足</span></div><div class="u4d-checklist-note">能够遵守室内规则，仍不理解隐私。</div></div>
+                            </section>
+                            <section class="u4d-report-section u4d-checklist-grid-section">
+                                <div class="u4d-report-section-heading"><strong>行为与反应</strong><small>追加观察</small></div>
+                                <div class="u4d-checklist-field"><strong>体位姿态</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>站立</span><span class="u4d-checkbox-option"><i></i>坐卧</span><span class="u4d-checkbox-option"><i></i>蜷缩</span><span class="u4d-checkbox-option is-checked"><i></i>失衡</span></div><div class="u4d-checklist-note">可独立站立，姿态仍不稳定。</div></div>
+                                <div class="u4d-checklist-field"><strong>活动量</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>静止</span><span class="u4d-checkbox-option is-checked"><i></i>偏低</span><span class="u4d-checkbox-option"><i></i>正常</span><span class="u4d-checkbox-option"><i></i>过度</span></div><div class="u4d-checklist-note">大部分时间保持观察姿势。</div></div>
+                                <div class="u4d-checklist-field"><strong>应激反应</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>稳定</span><span class="u4d-checkbox-option is-checked"><i></i>警戒</span><span class="u4d-checkbox-option"><i></i>逃避</span><span class="u4d-checkbox-option"><i></i>攻击</span></div><div class="u4d-checklist-note">被突然靠近时提高警戒。</div></div>
+                                <div class="u4d-checklist-field"><strong>触碰耐受</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>可接触</span><span class="u4d-checkbox-option is-checked"><i></i>局部回避</span><span class="u4d-checkbox-option"><i></i>强烈回避</span><span class="u4d-checkbox-option"><i></i>无反应</span></div><div class="u4d-checklist-note">仅回避左上肢旧伤处。</div></div>
+                            </section>
+                            <section class="u4d-report-section u4d-checklist-grid-section">
+                                <div class="u4d-report-section-heading"><strong>卫生与生理</strong><small>护理观察</small></div>
+                                <div class="u4d-checklist-field"><strong>清洁状态</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>清洁</span><span class="u4d-checkbox-option is-checked"><i></i>需协助</span><span class="u4d-checkbox-option"><i></i>拒绝清洁</span><span class="u4d-checkbox-option"><i></i>未处理</span></div><div class="u4d-checklist-note">可接受局部清洁，拒绝全身处理。</div></div>
+                                <div class="u4d-checklist-field"><strong>分泌情况</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>无</span><span class="u4d-checkbox-option is-checked"><i></i>少量</span><span class="u4d-checkbox-option"><i></i>明显</span><span class="u4d-checkbox-option"><i></i>异常</span></div><div class="u4d-checklist-note">伤口边缘有少量透明渗出。</div></div>
+                                <div class="u4d-checklist-field"><strong>排泄情况</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>正常</span><span class="u4d-checkbox-option"><i></i>减少</span><span class="u4d-checkbox-option"><i></i>异常</span><span class="u4d-checkbox-option"><i></i>未记录</span></div><div class="u4d-checklist-note">暂无异常记录。</div></div>
+                                <div class="u4d-checklist-field"><strong>肌张力</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>正常</span><span class="u4d-checkbox-option is-checked"><i></i>紧张</span><span class="u4d-checkbox-option"><i></i>松弛</span><span class="u4d-checkbox-option"><i></i>痉挛</span></div><div class="u4d-checklist-note">受惊时肩背和下肢短暂绷紧。</div></div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <section class="u4d-report-section u4d-report-archive">
+                        <div class="u4d-report-section-heading"><strong>永久病历归档</strong><small>长期记录 · 只追加</small><span class="u4d-archive-count">02 条</span></div>
+                        <ol class="u4d-archive-list"><li><span class="u4d-archive-index">01.</span><span>第一次理解“睡觉”可能意味着拒绝。</span></li><li><span class="u4d-archive-index">02.</span><span>学会在对方沉默时停止追问。</span></li></ol>
+                    </section>
+                    <footer class="u4d-exam-footer"><span>病例档案 / 当前记录</span><span>记录表 01</span></footer>
+                </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        (() => {
+            const root = document.querySelector("#u4d-inspection-root");
+            const windowElement = document.querySelector(".u4d-inspection-window");
+            const stack = document.querySelector(".u4d-report-stack");
+            const launcher = document.querySelector("#u4d-status-launcher");
+            const close = document.querySelector(".u4d-sheet-close");
+            let zoom = 0.5;
+            let drag;
+
+            const applyZoom = () => {
+                stack.style.setProperty("--u4d-scale", String(zoom));
+                windowElement.style.width = `${840 * zoom}px`;
+                windowElement.style.height = `${1120 * zoom}px`;
+            };
+
+            stack.addEventListener("wheel", event => {
+                event.preventDefault();
+                zoom = Math.min(1.35, Math.max(0.25, Math.round((zoom + (event.deltaY < 0 ? 0.06 : -0.06)) * 100) / 100));
+                applyZoom();
+            }, { passive: false });
+
+            stack.addEventListener("pointerdown", event => {
+                if (event.button !== 0 || event.target.closest("button")) {
+                    return;
+                }
+
+                const rect = windowElement.getBoundingClientRect();
+                windowElement.style.left = `${rect.left}px`;
+                windowElement.style.top = `${rect.top}px`;
+                windowElement.style.transform = "none";
+                drag = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, left: rect.left, top: rect.top };
+                stack.classList.add("is-dragging");
+                stack.setPointerCapture(event.pointerId);
+                event.preventDefault();
+            });
+
+            stack.addEventListener("pointermove", event => {
+                if (!drag || event.pointerId !== drag.pointerId) {
+                    return;
+                }
+
+                windowElement.style.left = `${drag.left + event.clientX - drag.startX}px`;
+                windowElement.style.top = `${drag.top + event.clientY - drag.startY}px`;
+                event.preventDefault();
+            });
+
+            const endDrag = event => {
+                if (!drag || event.pointerId !== drag.pointerId) {
+                    return;
+                }
+
+                drag = undefined;
+                stack.classList.remove("is-dragging");
+                stack.releasePointerCapture?.(event.pointerId);
+            };
+            stack.addEventListener("pointerup", endDrag);
+            stack.addEventListener("pointercancel", endDrag);
+            close.addEventListener("click", () => {
+                root.hidden = true;
+                root.setAttribute("aria-hidden", "true");
+                launcher.classList.remove("is-open");
+                document.body.style.overflow = "";
+                document.documentElement.style.overflow = "";
+            });
+            launcher.addEventListener("click", () => {
+                root.hidden = false;
+                root.setAttribute("aria-hidden", "false");
+                launcher.classList.add("is-open");
+                document.body.style.overflow = "hidden";
+                document.documentElement.style.overflow = "hidden";
+            });
+            applyZoom();
+        })();
+    </script>
+</body>
+</html>
