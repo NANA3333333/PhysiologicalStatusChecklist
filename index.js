@@ -9,20 +9,26 @@ const LAUNCHER_ID = "u4d-status-launcher";
 const INSPECTION_ID = "u4d-inspection-root";
 const LAUNCHER_POSITION_KEY = "u4d_status_launcher_position";
 const MOBILE_BREAKPOINT = 680;
+const BASE_REPORT_WIDTH = 840;
+const BASE_REPORT_HEIGHT = 1120;
+const REPORT_WINDOW_GAP = 12;
+const MIN_REPORT_ZOOM = 0.18;
 
 function getInitialReportZoom() {
-    if (typeof window === "undefined" || window.innerWidth > MOBILE_BREAKPOINT) {
+    if (typeof window === "undefined" || !isMobileViewport()) {
         return 0.5;
     }
 
-    const baseWidth = Math.min(840, Math.max(300, window.innerWidth - 24));
     const mobileFitZoom = window.innerWidth > window.innerHeight
         ? Math.min(
-            (window.innerWidth - 36) / (baseWidth * 2 + 18),
-            (window.innerHeight - 20) / (baseWidth * 4 / 3),
+            (window.innerWidth - 36) / (BASE_REPORT_WIDTH * 2 + 18),
+            (window.innerHeight - 20) / BASE_REPORT_HEIGHT,
         )
-        : (window.innerHeight - 36) / (baseWidth * 8 / 3 + 12);
-    return Math.min(0.75, Math.max(0.25, Math.round(mobileFitZoom * 100) / 100));
+        : Math.min(
+            (window.innerWidth - 16) / BASE_REPORT_WIDTH,
+            (window.innerHeight - 20 - REPORT_WINDOW_GAP) / (BASE_REPORT_HEIGHT * 2),
+        );
+    return Math.max(MIN_REPORT_ZOOM, Math.round(mobileFitZoom * 100) / 100);
 }
 
 const INITIAL_REPORT_ZOOM = getInitialReportZoom();
@@ -62,30 +68,30 @@ function getViewportMode() {
 }
 
 function isMobileViewport() {
-    return window.innerWidth <= MOBILE_BREAKPOINT;
+    if (typeof window === "undefined") {
+        return false;
+    }
+
+    const shortEdge = Math.min(window.innerWidth, window.innerHeight);
+    const hasTouchInput = navigator.maxTouchPoints > 0 || window.matchMedia?.("(pointer: coarse)")?.matches;
+    return window.innerWidth <= MOBILE_BREAKPOINT || (hasTouchInput && shortEdge <= MOBILE_BREAKPOINT);
 }
 
 function getReportDimensions() {
-    const margin = isMobileViewport() ? 12 : 24;
-    const baseWidth = Math.min(840, Math.max(300, window.innerWidth - margin * 2));
-    const baseHeight = baseWidth * 4 / 3;
     return {
-        baseWidth,
-        baseHeight,
-        width: baseWidth * reportZoom,
-        height: baseHeight * reportZoom,
+        baseWidth: BASE_REPORT_WIDTH,
+        baseHeight: BASE_REPORT_HEIGHT,
+        width: BASE_REPORT_WIDTH * reportZoom,
+        height: BASE_REPORT_HEIGHT * reportZoom,
     };
 }
 
 function getDateReportDimensions() {
-    const margin = isMobileViewport() ? 12 : 24;
-    const baseWidth = Math.min(840, Math.max(300, window.innerWidth - margin * 2));
-    const baseHeight = baseWidth * 4 / 3;
     return {
-        baseWidth,
-        baseHeight,
-        width: baseWidth * dateReportZoom,
-        height: baseHeight * dateReportZoom,
+        baseWidth: BASE_REPORT_WIDTH,
+        baseHeight: BASE_REPORT_HEIGHT,
+        width: BASE_REPORT_WIDTH * dateReportZoom,
+        height: BASE_REPORT_HEIGHT * dateReportZoom,
     };
 }
 
@@ -860,12 +866,12 @@ function applyDateReportZoom() {
 }
 
 function changeReportZoom(delta) {
-    reportZoom = Math.min(1.35, Math.max(0.25, Math.round((reportZoom + delta) * 100) / 100));
+    reportZoom = Math.min(1.35, Math.max(MIN_REPORT_ZOOM, Math.round((reportZoom + delta) * 100) / 100));
     applyReportZoom();
 }
 
 function changeDateReportZoom(delta) {
-    dateReportZoom = Math.min(1.35, Math.max(0.25, Math.round((dateReportZoom + delta) * 100) / 100));
+    dateReportZoom = Math.min(1.35, Math.max(MIN_REPORT_ZOOM, Math.round((dateReportZoom + delta) * 100) / 100));
     applyDateReportZoom();
 }
 
@@ -950,7 +956,7 @@ function updateInspectionPinch(sheetType, event) {
         return true;
     }
 
-    const nextZoom = Math.min(1.35, Math.max(0.25, Math.round((pinch.startZoom * distance / pinch.startDistance) * 100) / 100));
+    const nextZoom = Math.min(1.35, Math.max(MIN_REPORT_ZOOM, Math.round((pinch.startZoom * distance / pinch.startDistance) * 100) / 100));
     if (sheetType === "date") {
         dateReportZoom = nextZoom;
         applyDateReportZoom();

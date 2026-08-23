@@ -150,28 +150,33 @@
             const stack = document.querySelector(".u4d-report-stack");
             const launcher = document.querySelector("#u4d-status-launcher");
             const close = document.querySelector(".u4d-sheet-close");
-            const isMobile = () => window.innerWidth <= 680;
-            const getBaseWidth = () => Math.min(840, Math.max(300, window.innerWidth - (isMobile() ? 24 : 48)));
+            const isMobile = () => {
+                const shortEdge = Math.min(window.innerWidth, window.innerHeight);
+                const hasTouchInput = navigator.maxTouchPoints > 0 || window.matchMedia?.("(pointer: coarse)")?.matches;
+                return window.innerWidth <= 680 || (hasTouchInput && shortEdge <= 680);
+            };
+            const baseWidth = 840;
+            const baseHeight = 1120;
             const getInitialZoom = () => {
                 if (!isMobile()) {
                     return 0.5;
                 }
 
-                const baseWidth = getBaseWidth();
                 const fitZoom = window.innerWidth > window.innerHeight
                     ? Math.min(
                         (window.innerWidth - 36) / (baseWidth * 2 + 18),
-                        (window.innerHeight - 20) / (baseWidth * 4 / 3),
+                        (window.innerHeight - 20) / baseHeight,
                     )
-                    : (window.innerHeight - 36) / (baseWidth * 8 / 3 + 12);
-                return Math.min(0.75, Math.max(0.25, Math.round(fitZoom * 100) / 100));
+                    : Math.min(
+                        (window.innerWidth - 16) / baseWidth,
+                        (window.innerHeight - 32) / (baseHeight * 2),
+                    );
+                return Math.max(0.18, Math.round(fitZoom * 100) / 100);
             };
             let zoom = getInitialZoom();
             let drag;
 
             const applyZoom = () => {
-                const baseWidth = getBaseWidth();
-                const baseHeight = baseWidth * 4 / 3;
                 stack.style.setProperty("--u4d-base-width", `${baseWidth}px`);
                 stack.style.setProperty("--u4d-base-height", `${baseHeight}px`);
                 stack.style.setProperty("--u4d-scale", String(zoom));
@@ -181,7 +186,7 @@
 
             stack.addEventListener("wheel", event => {
                 event.preventDefault();
-                zoom = Math.min(1.35, Math.max(0.25, Math.round((zoom + (event.deltaY < 0 ? 0.06 : -0.06)) * 100) / 100));
+                zoom = Math.min(1.35, Math.max(0.18, Math.round((zoom + (event.deltaY < 0 ? 0.06 : -0.06)) * 100) / 100));
                 applyZoom();
             }, { passive: false });
 
