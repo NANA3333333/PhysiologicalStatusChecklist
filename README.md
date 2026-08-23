@@ -1,4 +1,4 @@
-# Unknown Four-Dimensional Entity Status Panel
+# Physiological Status Checklist
 
 ## 傻瓜式安装
 
@@ -6,7 +6,7 @@
 
 ### 方法一：下载 ZIP（推荐）
 
-1. 打开本仓库页面：<https://github.com/NANA3333333/UnknownFourDimensionalStatusPanel>
+1. 打开本仓库页面：<https://github.com/NANA3333333/PhysiologicalStatusChecklist>
 2. 点击绿色的 `Code` 按钮，再点击 `Download ZIP`。
 3. 找到下载好的 ZIP 文件，右键选择“解压到当前文件夹”。
 4. 把解压出来的文件夹改名为：
@@ -56,7 +56,7 @@ third-party/UnknownFourDimensionalStatusPanel/UnknownFourDimensionalStatusPanel-
 如果电脑已经安装 Git，在 SillyTavern 的插件目录打开 PowerShell，运行：
 
 ```powershell
-git clone https://github.com/NANA3333333/UnknownFourDimensionalStatusPanel.git UnknownFourDimensionalStatusPanel
+git clone https://github.com/NANA3333333/PhysiologicalStatusChecklist.git UnknownFourDimensionalStatusPanel
 ```
 
 然后重启 SillyTavern 或按 `Ctrl + F5`。
