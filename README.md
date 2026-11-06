@@ -1,10 +1,75 @@
 # Physiological Status Checklist
 
+## 1.29.6：手机触屏阅读与操作
+
+手机一次显示一张纸，可切换病例和签到表；竖屏按钮在底部，横屏在右侧，按钮点击区域至少 44px。提供放大、缩小、适屏和关闭，按当前纸张实际高度适配可用空间，字体变大、横竖屏切换后也不再让两张表相互覆盖。
+
+单指在纸面拖动，在长字段内滑动则滚动文字；双指以手指中心缩放纸张。签到记录轻点后打开对应日期病例。设置面板不自动唤起键盘，手机输入字号至少 16px，并随可见窗口高度调整。纸张滤镜与 1.29.5 的稳定蒙版保持原有实现。
+
+`npm run test:mobile` 使用无头 Chrome 的触摸输入检查 360 / 375 / 390px 竖屏与 844px 横屏、双指缩放、拖动、长文滚动、签到切换和缩小可见窗口后的设置面板。设置 `QA_HOST=http://127.0.0.1:8001/` 可对本机实际酒馆的已有 Subject-4D 聊天检查，测试浏览器拦截写入与模型生成。该检查是手机触屏模拟，不能替代实体手机及 iOS Safari 验收。
+
+## 1.29.5：稳定拖动与缩放中的纸面合成
+
+在本机 Chrome 156 的实际酒馆里复现了移动 / 缩放时文字层短暂闪空。仅拆分滤镜与蒙版、或仅把位移图换成 PNG 仍不足以解决；进一步对照显示，纸边图片与 SVG 磨损蒙版实时求交的组合在缩放时会丢失整层字迹。
+
+现在将原纸张透明边缘与原磨损几何预先合成为一张透明 PNG，运行时只用单张 alpha 蒙版。保留原 SVG 褶皱位移、纸纤维、光影、人体、字体与污渍效果；同时使用固定的折痕位移贴图。病例文字仍是可排版、滚动的 DOM，没有把整份病例截图化。
+
+源几何在 `paper-surface.js` 的 `PAPER_CREASE_MAP_SVG` 与 `PAPER_WEAR_MAP_SVG`，使用 `npm run build:paper-map` 重建 `assets/crease-displacement-v1.png` 与 `assets/paper-ink-mask-v1.png`。实际酒馆的拖动 / 往返缩放截图及合成画面检测证据在工作区 `outputs/motion-flicker-evidence/`。
+
+## 1.29.2：修复纸面整层闪空
+
+在本机 Chrome 156 与实际酒馆 Subject-4D 聊天中复现：DOM 没有变化，但文字、表格和人体所在图层间歇性变透明，只剩纸张背景。逐帧对照发现，同一元素同时承载 SVG 褶皱滤镜与 intersect 蒙版时出现闪空；单独移除其中任何一个都能消除问题，移除混合模式或字形局部滤镜则不能。
+
+现在内层负责褶皱、纸纤维和文字渲染，外层只负责纸边与磨损蒙版；病例痕迹和字体实验室的素材都进入内层。保留折痕、磨损、字体、人体发光和污渍效果。部署验证包含实际酒馆连续截图的像素对比，不再仅凭 DOM 静止判断画面稳定；证据在工作区 `outputs/surface-flicker-evidence/`。
+
+## 1.29.1：稳定纸面重绘
+
+滚动只更新原句痕迹的位置，不再重新计算整张纸的高度；痕迹 SVG 与图片节点复用，内容和尺寸未改变时不重写滤镜或图层。字体或尺寸重新排版时保留文字区的滚动位置，并隔离宿主主题的几何动画。固定字号、折痕、磨损、混合痕迹仍保留。
+
+新增 `npm run test:stability`：相同位置的 8 次滚动通知从修复前 400 次 DOM 改写降为 0；实际滚动保持图片节点、纸高和阅读位置，重复尺寸通知不重写褶皱滤镜。原解析器及 18 项测试、中英文病例无头回归通过。用户窗口的持续闪烁未在无头环境直接复现；本次修复的是已测出的重复重绘与滚动反馈路径，不将无头结果视为所有显卡环境的视觉验收。
+
+## 1.29.0：字体直选与英文病例
+
+`case-demo.html` 顶部和打开病例后的工具条都能直接选择字体、切换中文 / English；三张英文样例卡点击即可应用整份英文病例。字体实验室 `preview.html` 也增加了这三款字体。演示切换仅重绘预设样例，不调用模型，不不断追加示例聊天。
+
+实际酒馆通过 **EXAM → 病例设置 → 病例语言 / Case language** 选择 English。英文模式包含印刷表头与选项、设置表单、日期签到表、模型填表格式和英文原句标记。已有用户填写内容不自动翻译；从下一次正常回复开始要求英文填写。
+
+| 新增字体 | 用途建议 | 开源授权 |
+| --- | --- | --- |
+| [Caveat](https://github.com/google/fonts/tree/24ddc1f324cac5d9f5aedca126d298f56e3f1640/ofl/caveat) | 松弛的随手笔记 | SIL OFL 1.1 |
+| [Kalam](https://github.com/google/fonts/tree/24ddc1f324cac5d9f5aedca126d298f56e3f1640/ofl/kalam) | 较清晰的英文病例，英文默认 | SIL OFL 1.1 |
+| [Patrick Hand](https://github.com/google/fonts/tree/24ddc1f324cac5d9f5aedca126d298f56e3f1640/ofl/patrickhand) | 圆润整齐的手写 | SIL OFL 1.1 |
+
+三款原始字体未修改，固定到上述 Google Fonts 仓库提交，连同各自版权声明和完整 OFL 许可证打包。允许应用嵌入和随插件分发，包括商用；不能将字体本身单独出售。来源、哈希和许可见 `preview-fonts/sources.json`。新蒂两款个人非商业试用字体仍不进入安装包。
+
+拉丁字母按单词形成笔迹单元，保留字偶间距、字体连接和单词换行；中文仍逐字扰动。英文原句上的局部效果按单词应用，超长单词可分段以免越界。选英文字体时，混排中文字形回退到已打包的悠哉。固定表头保持正常印刷字体。英文较长选项采用更宽的字段布局，纸面随内容增高。
+
+英文 STATUS 支持 `writer/patient/writing/ink/blood/water`，保留中文协议兼容。英文字段、英文勾选选项及身体部位定位已接入；否定表达不会把 `not stable` 错勾为稳定。历史填表与记忆隔离规则保持不变。
+
+验证：原解析器及 18 项单元测试，中文病例/原宿主回归、英文预览无头测试；用浏览器实际字形信息确认 Caveat、Kalam、Patrick Hand 和混排中文回退均参与渲染。覆盖实时切换、英文原句痕迹、保存刷新、375/768/1280 布局。证据在工作区 `outputs/english-preview-evidence/`。真实模型是否遵守格式仍需实际聊天确认。
+
+## 1.28.0：角色病例与上下文纸面标记
+
+点击 **EXAM → 病例设置**，填写记录者、受检者和书写要求，保存后继续正常聊天。下一次回复会同时收到填表与纸面标记格式要求，不增加单独的模型调用。受检者留空使用当前聊天角色；记录者留空由 AI 根据上下文判断。
+
+- 设置按聊天保存，明确指定的角色组合不会混用其他组合的病例。表格页脚显示记录者。
+- 可调整印刷字号、手写字体与字号、起伏、模糊、潦草，分别允许血迹、水渍、划掉与涂抹。启用 AI 选择时手写参数作为默认值；关闭后固定使用手动参数。
+- AI 可选择全局笔迹，也可对某一段填写值重复叠加局部字体、模糊、放大、歪斜、划掉和涂抹。固定表头和选项始终是印刷字体。
+- 六种血迹、三种水渍可以多处共存，**同一种素材在一张病例中只出现一次**；笔迹和涂抹允许重复。AI 以“字段＋原句＋出现序号＋前／后／覆盖”定位，标记随换行、缩放和局部滚动对齐。
+- 字段、角色名和纸面指令共同保存在回复附属数据中，正文下方默认折叠，不作为后续正文上下文或自带记忆的输入。发送给模型的是当前用户设置及格式规则，不是历史病例值。
+- 重复素材、错误格式、未知素材和失效原句会跳过，折叠区域显示原因。每次回复的纸面方案替换旧方案，不跨回复累积污渍。
+
+例如书写要求可填：“林医生给 Orion 记录病例。疲劳导致笔迹起伏较大，‘左手轻微发抖’处略微模糊并放大；仅在上下文合理时，于某句后添加滴落血迹，并让纸边有受潮痕。”这些是提供给 AI 的要求，最终显示以模型输出的有效标记为准。
+
+详细字段格式与九种素材说明见 [CASE_PROTOCOL.md](CASE_PROTOCOL.md)。本地运行 `npm run dev` 后，可打开 `/case-demo.html` 操作实际插件设置；演示使用预设回复和模拟宿主，不冒充真实模型生成。
+
 ## 傻瓜式安装
 
 不懂代码也可以安装。这个插件不需要 npm、不需要编译，也不需要修改角色卡。
 
 ### 方法一：下载 ZIP（推荐）
+
+已有本次随附的版本安装包时，直接使用该 ZIP，从第 3 步开始。GitHub 下载得到的是仓库当前版本；本地交付并不表示已经推送到 GitHub。
 
 1. 打开本仓库页面：<https://github.com/NANA3333333/PhysiologicalStatusChecklist>
 2. 点击绿色的 `Code` 按钮，再点击 `Download ZIP`。
@@ -36,7 +101,7 @@ SillyTavern/
                ├─ manifest.json
                ├─ style.css
                └─ assets/
-                  └─ human-outline.png
+                  └─ …
 ```
 
 重点检查：`index.js` 必须直接在 `UnknownFourDimensionalStatusPanel` 里面。
@@ -67,91 +132,100 @@ git clone https://github.com/NANA3333333/PhysiologicalStatusChecklist.git Unknow
 
 - 导入角色卡只会导入人设、开场白和世界书，不会自动带上本插件。
 - 这台 SillyTavern 安装过插件后，其他角色卡也可以使用它。
-- 插件会自动注入状态协议提示词，角色卡不需要再添加 HTML、CSS 或插件提示词。
+- 插件提供固定的填表格式说明；模型在正常正文末尾输出字段，前端将它们折叠展示。角色卡无需添加 HTML、CSS。
 - 换到另一台电脑时，需要在那台电脑的 SillyTavern 里重新安装插件。
 
-## 安装后怎么使用
+## 1.27.0：折叠字段与正文隔离
 
-插件安装成功后不需要额外设置：
+模型先输出正常正文，再在末尾输出 `[STATUS: 字段=值 | 字段=值]`。前端在正文下方显示默认收起的“检查字段”，点击可展开查看原始字段；EXAM 浮窗显示合并后的检查表和每日签到。
 
-1. 打开角色聊天。
-2. 点击 `EXAM` 浮窗。
-3. 继续正常对话。
-4. 只有日期、身体状态、损伤、行为或其他记录真正变化时，AI 才需要输出状态行。
-5. 没有状态变化时，AI 可以只输出正常正文。
-6. 勾选类状态出现异常、恶化或变化时，AI 会同步填写“观察补记”，记录具体表现、发生条件、涉及部位和变化结果。
+- 同一次正常回复完成填表，不额外调用模型。
+- 提示词只含固定的输出格式和字段选项，不注入表格快照、已填值、缺失项或永久档案。
+- 只填写正文有依据的观察。未知保持未记录，不要求为填满表格编造正常状态。
+- 同日省略字段保持上次的显示值；跨日清空短期观察，保留形态和成长阶段。未复查损伤不会假定痊愈。
 
-插件会把状态行隐藏起来，并把数据保存在当前聊天中。正文不需要 HTML，插件也不会把 CSS 追加到正文下面。
+### 字段保存在哪里
 
-## 常见问题
+在 `MESSAGE_RECEIVED` 等完成事件的前置监听器中，插件将 STATUS 块从助手消息 `mes` 和各候选 `swipes` 移到对应的 `extra.u4d_status_fields`。折叠面板从这些附属数据生成，并放在 `.mes_text` 之外。普通聊天上下文、SillyTavern 自带记忆和向量插件读取的 `mes` 只保留正文。多行、未知字段和被中断的不完整块也隔离保存；不完整块可查看但不会更新表格。
 
-### 看不到 EXAM 浮窗
+每个候选回复独立保存字段。编辑正文后不沿用旧字段；修改早先上下文后，下游旧检查结果不再参与当前表格。切换聊天、重 roll、删除消息和分支均按当前消息路径重建，不读取旧全局永久记录。群聊按角色名或原始头像隔离显示。
 
-按下面顺序检查：
+出站请求还有一次历史 STATUS 清理，覆盖文本补全以及包含文字、图片的聊天补全内容，保留图片和固定格式说明。用户及系统消息的已保存文本不会被改写。
 
-1. 确认 `index.js` 在正确的位置：
+固定的格式提示仍会发送给模型以要求末尾填表；这不能被表述为“完全没有任何提示词影响”。保证的边界是：**历史填表值不反馈为后续上下文，不作为新增记忆输入**。安装前已经保存的旧摘要或向量不自动删除；读取任意 `extra`、DOM 或原始网络响应的第三方插件需单独验证。
 
-   ```text
-   SillyTavern/public/scripts/extensions/third-party/UnknownFourDimensionalStatusPanel/index.js
-   ```
+### 手写拟真
 
-2. 确认不是把 ZIP 文件本身放进了 `third-party`。
-3. 确认没有多套一层 `UnknownFourDimensionalStatusPanel-main` 文件夹。
-4. 重启 SillyTavern，或按 `Ctrl + F5`。
-5. 进入角色聊天后再看页面边缘。
+保留原来的检查表结构、拖动、缩放、手机排版和损伤定位。纸张以 840 × 1120 为基础，字号变大时适当延长。在填写值上增加逐字位置、转角、字号和墨色变化；采用稳定种子，同一记录重新打开不会换一套笔迹。保留可选择的真实文字，长内容仍可滚动。
 
-### 导入角色卡后没有插件
+只借鉴本地手写模拟器公开参数和示例所体现的方法：字号/字距变化、横纵偏移、角度扰动、纸面融合。没有运行或反编译模拟器 EXE，没有复制其字体、背景或软件代码。1.28.0 使用绘图模型生成的纸张与透明痕迹、本地打包的三款 OFL 字体及浏览器纸面渲染；系统楷体作为可选回退。
 
-这是正常的。插件必须单独安装在 SillyTavern 的 `third-party` 文件夹里；角色卡不会携带插件文件。
+### 字体授权核查（2026-11-05）
 
-### 如何更新插件
+本地模拟器内置四款字体为“义启手写体、云烟体、李国夫手写体、青叶手写体”。其 TTF 名称表分别含义启、文道、TAKEZOU、深圳以品的版权/厂商信息，没有找到随包的 OFL、Apache 等开源许可证。附赠字体包还混有方正、汉仪等字库，不能因随软件附赠就视为开源。
 
-下载新版本 ZIP 后，用新文件夹替换旧的 `UnknownFourDimensionalStatusPanel` 文件夹，然后重启 SillyTavern 或按 `Ctrl + F5`。当前聊天里的状态数据保存在聊天元数据中，不在插件文件夹里。
+[义启手写体官方授权页](https://www.17font.com/font/detail/86c77cd1666741d0befe85aa74011a99.html)将它标为商用授权字体。其余字体本轮未找到足以证明开源及可再分发的原始授权文件，因此不纳入项目。
 
-This SillyTavern extension owns the incremental `[STATUS: ...]` protocol and renders a draggable floating entry point for a fixed, light-themed humanoid case record. The protocol prompt is injected by the extension, so other character cards can use the panel without copying prompt text into the card.
+项目原有 CSS 使用 Noto、微软雅黑、宋体等系统回退字体，并不等于整个字体栈开源；本版新增的楷体回退也仅引用用户系统已有字体，不提取或分发字体文件。
 
-The extension is enabled for the active character by default. A character can opt out with `data.extensions.u4d_status_panel.enabled = false`.
+### 从旧版更新
 
-## Protocol
+将完整文件夹放到 SillyTavern 的 `public/scripts/extensions/third-party/UnknownFourDimensionalStatusPanel/`，完整刷新页面。不要同时加载两个副本。所有 `.js` 模块均需保留，不要只替换 index.js。
 
-The extension injects the following rules before generation. The model only outputs fields that changed. Omitted current fields keep their previous values. A permanent archive entry uses `+=` and is never overwritten:
+旧消息中的 STATUS 块会迁移到同一消息的附属数据，正常叙述保持不变。原 `u4d_status_state` 和本地实验版 `u4d_physiology_state` 元数据保留，但不作为新表格和提示词的来源。没有原始 STATUS 的独立提取记录仍保留在旧元数据中，不伪造成模型输出。
 
-```text
-[STATUS: 日期=第1天·夜 | 成长周期=幼体·阶段1 | 形态=14岁少年拟态 | 身体=低体温/饥饿 | 损伤=左上肢旧伤裂口 | 驱动=寻找热源 | 观察重点=确认是否能接受拒绝 | 精神=清醒但高度惊恐 | 行动=无法独立站立 | 感官=嗅觉灵敏 | 沟通=仅能发出低鸣 | 摄入=尚未进食 | 休眠=未休眠 | 处置=保持温暖 | 三维稳定=人形拟态不稳定 | 自理=无法独立完成 | 边界=无法理解拒绝 | 适应=不具备人类社会适应能力 | 记录+=首次将用户识别为唯一热源]
+更新前可用 SillyTavern 原有聊天导出保留完整备份。本轮交付没有替换你的已安装插件，也没有修改真实聊天或调用你的模型 API。
+
+### 看不到 EXAM
+
+确认 `index.js` 直接位于插件目录中，没有多套一层文件夹。完整刷新后进入角色聊天。角色卡可通过 `data.extensions.u4d_status_panel.enabled = false` 禁用表格。需要支持 manifest `hooks.activate` 的 SillyTavern 版本；本机源码已核对该生命周期和相关事件接口。
+
+## 开发与验证
+
+### 印刷表格与手写填写对比页
+
+启动开发服务器后打开 `http://127.0.0.1:4186/preview.html`。标题、字段名、选项、印刷说明始终使用正常字体；姓名、日期、填写值、批注及损伤说明才使用手写字体。勾记、损伤叉号以笔画绘制，选项文字和方框不因勾选而变色或加粗。可切换字体、调整书写起伏、字号与墨色，并在“观察补记”中试写。支持适应页面、原尺寸查看和折叠字段展示。
+
+悠哉字体、霞鹜文楷和小赖字体均从作者的 GitHub Release 下载，原始 TTF 未修改，随附对应版本的 OFL 1.1 全文。来源、版本和 SHA-256 见 `preview-fonts/sources.json`。1.28.0 已将这三款字体用于实际插件并随安装包分发；默认使用悠哉。旧 1.27.0 安装包保留。
+
+另加入[新蒂手札体](https://sentyfont.cn/journal.htm)和[新蒂美工钢笔](https://sentyfont.cn/fountainpen.htm)作本机个人非商业预览。作者官网明确允许个人非商业使用，但[条款](https://sentyfont.cn/terms%20and%20conditions.htm)另列应用嵌入授权，未确认可以随免费插件向公众分发，不能标成开源字体。这两款原始 TTF 仅存于本工作区 `work/preview-private-fonts`，开发服务器通过固定文件名映射读取；未放入仓库、安装包或公开网站。复制仓库到其他位置时，若没有个人试用文件，可选前三款 OFL 字体预览。
+
+对比页使用实际插件生成的示例检查表。已用无头 Chromium 确认五款字体真实参与填写字形渲染，并确认固定选项使用系统字体。全部字体切换及字号/墨色调整前后，固定标题、字段名、选项的字体、字号、字重和颜色均保持一致；损伤批注正常使用手写字体。试写、重置、折叠及移动端排版检查通过。
+
+### 书写扰动与纸面痕迹预览
+
+已查阅本机手写模拟器的 `Parameter/背景1.json`、`背景2.json`、`背景3.json` 和附带案例。以背景 1 为例：字号 100、字号标准差 2、字距标准差 2、x/y 扰动标准差各 3、旋转标准差 0.05。它将字号、字距、位置和旋转分别设参。本机包只有可执行程序，未核实其内部实现；这里参考参数与视觉表现自行实现，不复制字体、背景或程序代码。
+
+笔迹改为有界正态扰动，加入实际字距松紧与连续的基线漂移。预览“书写起伏”范围 0–400%，默认现场预设为 260%；“潦草程度”另外调节斜切和挤压，“局部模糊”只影响部分手写字。上方近看样例会同步变化。支持干净对照、日常记录、匆忙填写、现场凌乱四个预设。
+
+`paper-effects.js` 用原创 SVG 路径生成划线与来回涂抹；水痕、血迹已替换为绘图模型生成的透明 PNG，提供三类水痕、六类血迹及形成方式说明，生成记录在 `assets/generated-assets.json`。各项均可独立归零；“换一组痕迹”明确切换种子，普通重绘不会随机跳动。划线和涂抹附着于观察补记的文字行，随换字体、缩放、换行和局部滚动保持对齐。水痕与血迹固定在纸上。装饰图层不拦截点击，不添加文字、不改填表数据、不改变聊天元数据、不调用模型。
+
+字体比较页仍提供独立滑杆与预设实验；1.28.0 实际插件通过病例设置和 AI 原句标记使用同一套素材。比较页的历史验证截图与结果在工作区 `outputs/paper-effects-evidence/`，实际病例流程在 `outputs/case-workflow-evidence/`。
+
+### 印刷字号、纸纹与光照
+
+840 × 1120 的纸面上，固定选项从约 8.2 px 提高到 10 px，字段名从 8.8 px 提高到 11 px，分区标题从 9.6 px 提高到 12 px，主标题为 24 px。右栏略加宽，压缩空白间隔，保留所有选项和填写区域；预览手写默认字号为 15 px。固定字不随手写滑杆变化。
+
+预览设置顶部提供独立的「印刷字号」（80%–130%）和「手写字号」（11–18 px）滑杆。印刷字号同时调整主标题、表头、字段名和固定选项；较大字号会适当加宽右侧小栏并延长纸面，避免选项拆行、内容溢出或遮住页脚。缩回 100% 时恢复原纸面尺寸。纸纹遮罩、折线位移与光照同步适应纸面高度，顶部标题沿背景左上角实际折线产生偏移和断墨，缺口附近有局部磨损；正文数据保持原样。
+
+`paper-surface.js` 让文字、表格线与痕迹共用纸边磨损、卷角遮挡和折线位移；再以微弱的墨粒覆盖变化与亚像素柔化模拟纸上印刷。整张纸共用光照层，字迹与纸面同时进入明暗区域。默认窗边侧光；预览支持柔和散光、窗边侧光、局部遮阴及明暗强度，0 表示关闭额外光照，保留原纸纹。参照 SD7K 真实文档照片和加拿大文物保护研究所摄影资料，来源及实现范围见 `assets/print-lighting-references.json`。这是二维视觉近似，原纸张素材已有固有明暗。
+
+无头 Chromium 已确认固定字体与透明方框、三种光线及重置、完整栏位不溢出、375/768/1280 宽度适配，并通过五款字体切换与原插件字段隔离、历史记录、滚动和交互回归。证据在工作区 `outputs/print-lighting-evidence/`。本轮没有替换实际安装目录或更新旧安装包。
+
+原生 JavaScript，无需编译或安装生产依赖。
+
+```sh
+npm test
+npm run dev
 ```
 
-Later updates on the same story day can be partial:
+开发服务器仅监听 `127.0.0.1:4186`，使用示例聊天和模拟宿主接口，不连接真实账户。运行服务器后访问该地址即可预览实际插件。自动化时将服务器放到后台，再运行：
 
-```text
-[STATUS: 身体=体温稳定 | 记录+=第一次理解“睡觉”是拒绝]
+```sh
+npm run test:browser
+npm run test:case
 ```
 
-The model must update `日期` whenever the narrative crosses midnight or explicitly advances to another day. A day key uses `第N天·时段` (or an established calendar date). Changing only the time of day keeps the same sheet. Changing the day starts a fresh daily examination: short-term observations are cleared, while growth cycle, form, and append-only permanent records carry forward. Ongoing injuries must be reassessed in that new-day status line instead of being silently copied or treated as healed.
+浏览器测试需要可用的 `playwright-core` 及 Chromium；可用 `PLAYWRIGHT_MODULE` 指定模块入口。`QA_OUTPUT` 可指定截图与 JSON 结果目录。
 
-The extension injects the prompt before each generation with the latest merged snapshot, then scans the character reply after it is received or edited. It merges the current snapshot, accumulates permanent records, hides the protocol line, and renders the fixed examination desk. The model never needs to generate HTML or CSS, and no status CSS is appended below the message body. `因果+=`, `已学会+=`, `形态库+=`, and `记忆+=` are accepted as categorized permanent records.
-
-The prompt includes the exact checkbox vocabulary used by the renderer. A checkbox field is considered complete only when its value matches at least one of those options; medical synonyms that do not match an option are treated as missing and trigger the full-table requirement. This keeps the generated clinical wording and the visible check marks on the same vocabulary.
-
-When a checkbox-style condition becomes abnormal, worsens, or changes from the current snapshot, the protocol also requires an `观察补记` value describing the manifestation, trigger or circumstances, affected region when applicable, and resulting change. A checkbox conclusion by itself is not sufficient.
-
-All status text follows a clinical case-note standard, and the current character (`char`) is always the sole examination subject. Field values, injury descriptions, observation notes, care entries, and permanent records must describe `char` in an objective, restrained, verifiable medical-record voice. The user's action may appear only as the trigger, observation condition, or care context for a reaction by `char`; the user's own symptoms, injuries, emotions, abilities, intake, sleep, or behavior must never be written into the character's record. The model should record the observed site, manifestation, severity or extent, timing or trigger, care, and outcome when available. It must not invent measurements, diagnoses, test results, medication details, or poetic/chatty descriptions, and any character quotation must be explicitly marked as `原话` rather than treated as a clinical conclusion.
-
-The examination record uses date, growth cycle, form, body condition, temperature regulation, breathing, circulation, energy reserve, injury, current drive, pain response, tissue condition, observation, mental state, cognition, mobility, posture, activity level, stress response, touch tolerance, senses, communication, intake, rest, learning and memory, dimensional anomaly, risk assessment, care, hygiene, secretion, excretion, muscle tone, three-dimensional stability, self-care, boundary response, social adaptation, and the append-only archive. Each variable is shown once in a compact 3:4 portrait paper table. A second 3:4 daily check-in table records one row per story day, including growth/form, grouped examination completion, completion count, and a brief daily summary. The body diagram creates a red cross only when the current injury text names that region; inactive marks are not rendered.
-
-The paper table also accepts observation fields: `观察重点`, `精神状态`, `行动能力`, `体位`, `活动量`, `应激`, `触碰耐受`, `感官`, `沟通`, `摄入`, `休眠`, `处置`, `清洁状态`, `分泌情况`, `排泄情况`, `肌张力`, `三维稳定度`, `自理能力`, `边界反应`, and `社会适应`. The form uses compact two-column checkboxes as a visual summary of known values and fixed ruled lines for clinical summaries. Omitted fields retain their values only within the same story day.
-
-Opening the floating launcher shows the latest examination record and the daily check-in table together. Click a recorded date row to load that day's concrete examination record; opening the launcher again restores the latest record. Each paper can be dragged, proportionally zoomed, and closed independently. The mouse wheel scrolls a field when that fixed field is overflowing; elsewhere on that paper, the same wheel zooms the whole paper. Scrollbars remain hidden. Long field text, permanent records, and check-in history therefore stay on their original single sheets without continuation pages or data loss. All status and daily history data live only in the active chat's `chat_metadata`; the extension does not create a separate database.
-
-On phone-sized viewports, the two papers stack vertically in portrait mode and sit side by side in landscape mode. The initial scale is calculated from the available screen area, the paper remains 3:4, and touch dragging plus two-finger pinch zoom are supported. Rotating the device repositions un-dragged papers within the viewport.
-
-For each story day, the first status update must establish every table field. Until the prompt reports that the current table is complete, the model must fill all missing fields in one status line; only then may later turns update a single changed field or `观察补记`. A new story day starts this completeness check again.
-
-## Developer Install
-
-Place this folder at:
-
-```text
-SillyTavern/public/scripts/extensions/third-party/UnknownFourDimensionalStatusPanel
-```
-
-Restart SillyTavern or reload the page. The extension works with all active character cards unless they explicitly set `data.extensions.u4d_status_panel.enabled = false`.
+1.28.0 验证包含原有解析器、15 项数据隔离/笔迹/病例协议测试及 Chromium 无头测试。浏览器覆盖病例角色与设置保存、九种素材共存和去重、局部笔迹叠加、原句随滚动定位、刷新稳定、禁用效果优先、跨聊天防误保存，以及原有折叠、出站清理、历史记录、编辑、换日和移动端布局。无头测试使用预设模型回复与模拟 SillyTavern 宿主；真实模型是否严格遵守格式、手机原生双指手势及其他第三方记忆插件仍需在实际使用环境确认。
