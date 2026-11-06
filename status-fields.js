@@ -1,3 +1,4 @@
+import { EN_CHECKLIST } from './case-language.js';
 const NEGATION_PREFIX = /(?:无|未|未见|没有|不|否认|未出现|未观察到)[^。；]{0,12}$/u;
 
 export const CHECKLIST_FIELDS = Object.freeze({
@@ -31,10 +32,17 @@ export const CHECKLIST_FIELDS = Object.freeze({
     muscleTone: { label: "肌张力", options: [["正常", [/^正常$/u, /正常张力|肌张力正常/u]], ["紧张", [/紧张|僵硬|绷紧/u]], ["松弛", [/松弛|无力|低张/u]], ["痉挛", [/痉挛|抽搐|收缩异常/u]]] },
 });
 
+for(const [key,definition]of Object.entries(CHECKLIST_FIELDS)){
+    for(const [i,[,patterns]]of definition.options.entries()){
+        const label=EN_CHECKLIST[key][1][i].replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+        patterns.push(new RegExp(`\\b${label}\\b`,'iu'));
+    }
+}
 export const CHECKLIST_FIELD_KEYS = new Set(Object.keys(CHECKLIST_FIELDS));
 
 function hasNegatedMatch(text, index) {
-    return NEGATION_PREFIX.test(text.slice(Math.max(0, index - 8), index));
+    const prefix=text.slice(Math.max(0,index-60),index).split(/\b(?:but|however)\b/iu).at(-1);
+    return NEGATION_PREFIX.test(text.slice(Math.max(0, index - 8), index))||/\b(?:no|not|without|denies|denied)\b[^.;,\n]{0,40}$/iu.test(prefix);
 }
 
 export function matchesChecklistOption(value, patterns) {

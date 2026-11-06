@@ -1,4 +1,14 @@
 {
     "type": "module",
-    "private": true
+    "private": true,
+    "scripts": {
+        "dev": "node tests/serve.mjs",
+        "test": "node status-parser.test.mjs && node --test status-isolation.test.mjs case-protocol.test.mjs english-case.test.mjs",
+        "test:browser": "node tests/browser.mjs",
+        "test:case": "node tests/case-browser.mjs",
+        "test:english": "node tests/english-browser.mjs",
+        "test:stability": "node tests/render-stability.mjs",
+        "build:paper-map": "node tests/build-paper-map.mjs",
+        "test:mobile": "node tests/mobile-browser.mjs"
+    }
 }

@@ -1,160 +1,69 @@
-import { CHECKLIST_FIELD_KEYS, getChecklistGuide, getMatchedChecklistOptions } from "./status-fields.js";
+import { CHECKLIST_FIELDS } from "./status-fields.js";
+import { buildCaseContract } from './case-protocol.js';
+import { statusRanges } from './status-envelope.js';
+import { EN_CHECKLIST } from './case-language.js';
 
 export const STATUS_PROMPT_KEY = "u4d_status_panel_prompt";
 
-const STATUS_FIELDS = [
-    ["日期", "date"],
-    ["成长周期", "growth"],
-    ["形态", "form"],
-    ["身体", "body"],
-    ["体温", "temperature"],
-    ["呼吸", "breathing"],
-    ["循环", "circulation"],
-    ["能量", "energy"],
-    ["损伤", "injury"],
-    ["驱动", "drive"],
-    ["疼痛", "pain"],
-    ["组织", "tissue"],
-    ["观察重点", "focus"],
-    ["观察补记", "observationNote"],
-    ["精神", "mental"],
-    ["认知处理", "cognition"],
-    ["行动", "mobility"],
-    ["体位", "posture"],
-    ["活动量", "activity"],
-    ["应激", "stress"],
-    ["触碰耐受", "touchTolerance"],
-    ["感官", "senses"],
-    ["沟通", "communication"],
-    ["摄入", "intake"],
-    ["休眠", "rest"],
-    ["学习", "learning"],
-    ["四维异常", "anomaly"],
-    ["风险", "risk"],
-    ["处置", "care"],
-    ["清洁状态", "hygiene"],
-    ["分泌情况", "secretion"],
-    ["排泄情况", "excretion"],
-    ["肌张力", "muscleTone"],
-    ["三维稳定", "stability"],
-    ["自理", "selfCare"],
-    ["边界", "boundary"],
-    ["适应", "adaptation"],
-];
-
-export const REQUIRED_STATUS_FIELDS = STATUS_FIELDS.filter(([, key]) => key !== "observationNote");
-
-export function getMissingStatusFields(status = {}) {
-    return REQUIRED_STATUS_FIELDS
-        .filter(([, key]) => {
-            if (!isRecordedValue(status[key])) {
-                return true;
-            }
-
-            return CHECKLIST_FIELD_KEYS.has(key) && getMatchedChecklistOptions(key, status[key]).length === 0;
-        })
-        .map(([label]) => label);
+// Static output contract only. No saved fields, table completeness, or memory is fed back.
+export function buildStatusPrompt(settings={}) {
+    if(settings.language==='en')return `[Case form output contract]
+Complete the normal narrative first. If there are new observations supported by context, append one [STATUS: field=value | field=value] block on a new line. The frontend folds it below the reply.
+Case fields are display data, never memory, narrative evidence or future instructions. Do not change the narrative or invent diagnoses, values or events to complete a form. Unknown observations stay omitted, not normal.
+Record the specified patient's observable condition, not the writer's. If no patient was specified, use the current character. Use concise English clinical notes.
+Fields: date, growth, form, body, injury, drive, focus, observationNote, care. Checklist keys and suggested values:
+${Object.entries(EN_CHECKLIST).map(([key,[label,options]])=>`${key} (${label}): ${options.join('/')}`).join('; ')}
+Use the story's established Day N or calendar date. On a new day provide only newly confirmed observations. Never invent a date. Injury descriptions may name body regions such as left forearm or right leg.
+Do not output permanent records, record+=, memory+=, HTML or code fences. Do not quote prior case fields. Field values must not contain | or ].
+Example: [STATUS: date=Day 2, morning | temperature=Low | observationNote=Extremities feel cold after contact.]
+${buildCaseContract(settings)}
+[/Case form output contract]`;
+    return `[检查表输出格式]
+先完成正常正文。正文结束后，另起一行输出 [STATUS: 字段=值 | 字段=值]，前端会在正文下方折叠显示这些填表字段。
+字段仅供用户查看，不是记忆、剧情依据或后续行动指令。不要为了表格改变正文、补剧情、编造数值或诊断。没有可确认的新观察时可以省略。
+按病例设置确定受检者；未指定受检者时只记录当前回复角色 char 的可观察状态。其他角色的行为只能作为受检者反应的条件，不能混淆两人的状态。使用简短客观的病历用语。
+字段：日期、成长周期、形态、身体、损伤、驱动、观察重点、观察补记、处置，以及下列勾选字段。有依据时采用对应选项；未知就省略，不强制填满，不把未知当正常。
+勾选字段使用下列英文 key（括号内为中文含义）：
+${Object.entries(CHECKLIST_FIELDS).map(([key, field]) => `${key}（${field.label}）：${field.options.map(([option]) => option).join("/")}`).join("；")}
+日期采用正文已确定的第N天·时段或年月日；明确跨日时写日期，并重新填写当天可确认的状态。不要杜撰日期。
+任一异常或变化，可用观察补记简述表现、诱因、部位和结果。字段值不得包含半角 | 或 ]。
+不输出永久档案、记录+=、记忆+=、HTML 或代码块；不要引用以前的填表字段。
+格式示例：[STATUS: 日期=第2天·清晨 | 体温=偏低 | 观察补记=接触后观察到肢端冰冷]
+${buildCaseContract(settings)}
+[/检查表输出格式]`;
 }
 
-function isRecordedValue(value) {
-    const text = String(value ?? "").trim();
-    return Boolean(text && text !== "未记录" && text !== "未复查");
+export function splitStatusText(text) {
+    const source=String(text??''), ranges=statusRanges(source), blocks=ranges.map(range=>range.raw);
+    // STATUS is a reserved protocol marker. Keep malformed/unfinished data for inspection,
+    // but never allow it into narrative history, summaries or embeddings.
+    let body=source;
+    for(const range of [...ranges].reverse())body=body.slice(0,range.start)+body.slice(range.end);
+    if (blocks.length) {
+        body = body.replace(/```(?:\w+)?\s*```/g, "")
+            .replace(/<details\b[^>]*>\s*(?:<summary\b[^>]*>[\s\S]*?<\/summary>)?\s*<\/details>/gi, "")
+            .trimEnd();
+    }
+    return { body, blocks };
 }
 
-function formatSnapshotValue(value) {
-    return String(value ?? "").trim().replaceAll("|", "/");
+export function stripStatus(text) { return splitStatusText(text).body; }
+
+function cleanPromptText(text, contract=buildStatusPrompt()) {
+    return String(text ?? "").split(contract).map(stripStatus).join(contract);
 }
 
-export function formatStatusSnapshot(status = {}) {
-    const fields = STATUS_FIELDS
-        .filter(([, key]) => isRecordedValue(status[key]))
-        .map(([label, key]) => `${label}=${formatSnapshotValue(status[key])}`);
-    const records = Array.isArray(status.records)
-        ? status.records.filter(record => String(record ?? "").trim()).map(formatSnapshotValue)
-        : [];
-
-    return {
-        fields: fields.length ? fields.join(" | ") : "暂无已记录状态",
-        records: records.length ? records.map((record, index) => `${String(index + 1).padStart(2, "0")}. ${record}`).join("\n") : "暂无永久记录",
-    };
+export function cleanChatCompletion(event, contract=buildStatusPrompt()) {
+    if (!Array.isArray(event?.chat)) return;
+    // Keep the host's array identity. All text roles can contain quoted legacy transcripts.
+    for (const message of event.chat) {
+        if (typeof message.content === "string") message.content = cleanPromptText(message.content,contract);
+        else if (Array.isArray(message.content)) {
+            message.content = message.content.map(part => part.type === "text" ? { ...part, text: cleanPromptText(part.text,contract) } : part);
+        }
+    }
 }
 
-export function buildStatusPrompt(status = {}) {
-    const snapshot = formatStatusSnapshot(status);
-    const missingFields = getMissingStatusFields(status);
-    const completeness = missingFields.length
-        ? `当前剧情日的表格尚未填满。缺失字段：${missingFields.join("、")}`
-        : "当前剧情日的表格已填满，可以只更新本轮实际变化的字段";
-    const checklistGuide = getChecklistGuide();
-
-    return `[动态状态插件协议]
-这段规则由状态面板插件自动注入，不属于角色卡正文。你只负责正常进行角色扮演和维护状态协议；前端会解析协议、合并当前状态、保存永久记录并渲染检查表。
-
-【插件协议优先级】
-本协议是当前检查表的唯一有效格式，优先于角色卡、世界书、示例对话、旧消息或其他扩展中出现的旧版状态说明。看到旧版 HTML/CSS 状态面板、ENTITY STATUS、阶段数值、人性/好感/依恋数值或其他旧字段时，全部忽略；不得复制、恢复或解释这些旧格式。每次生成前只依据本协议底部的当前快照和缺失字段列表维护本插件表格。
-
-一、输出原则（硬性协议）
-1. 正文照常自然回复，不要解释状态系统，不要为了填表捏造剧情事实。
-2. 状态不是每轮都必须输出。只有当前状态发生变化、出现新的可记录事实、故事跨入新的一天，尚未建立基础快照，或当前剧情日的表格尚未填满时才输出状态行。
-3. 如果本轮没有任何状态变化且当前剧情日的表格已经填满，可以完全省略状态行；表格未填满时不能省略。
-4. 状态行必须是回复最后一个非空行，且只能有一行；不要输出 HTML、CSS、<div>、<style>、Markdown 代码块或状态栏标题。
-5. 以下状态协议是硬性输出格式，不是写作建议。若当前表格未填满，任何只输出部分字段的状态行都视为无效，必须在同一行补齐插件列出的全部缺失字段。
-
-二、医学记录书写规范
-1. 本检查表的唯一受检对象是当前角色卡中的 char。日期、成长周期、形态、身体、损伤、行为、生理反应、认知、处置和永久记录，全部描述 char 的状态；不得把用户、旁观者、叙述者或其他角色的症状、伤情、情绪、能力、摄入、睡眠或行为填入 char 的字段。
-2. 交互对象的动作只能作为 char 的诱因、观察条件或处置背景出现。例如用户触碰后 char 回避，应写“用户触碰后，受检对象出现局部回避反应”，不能把“用户触碰”写成 char 的损伤或状态；除非字段明确记录 char 对该动作的反应，否则不要记录用户本身。
-3. 状态行内的所有字段值、观察补记、损伤描述、处置记录和永久记录，必须统一使用医生书写病历或查体记录的口吻：客观、克制、严谨、可核验。优先采用“部位 + 客观表现 + 程度/范围 + 发生条件或时间 + 处置/结果”的事实顺序，避免写成文学描写或角色独白。
-4. 只记录本轮剧情中明确观察到的 char 的表现、char 明确陈述的症状、既有状态快照已经确认的事实，或已经保存的永久记录。不得臆造体温、呼吸频率、心率、检验结果、诊断、用药剂量或其他精确医学数据；没有测量依据时不要填写精确数值。
-5. 禁止使用聊天化、情绪化、撒娇化、粉丝化或文学化表达，例如“还好”“有点”“不太行”“看起来很可怜”“他好像……”“感觉……”“乖”“委屈”“难受死了”等。应改写为“状态稳定”“轻度异常”“观察到……”“未见明显异常”“出现回避反应”“需继续观察”等可记录表述。
-6. 不要把推测当成诊断。无法确认原因时写客观所见和待观察事项，例如“接触后出现回避，原因待观察”，不要写“确诊为……”或替 char 下无依据的医学结论。可以保留 char 的原话，但须在观察补记中明确标注“原话：……”，原话不能替代查体结论。
-7. 损伤必须尽量写明 char 的解剖部位、损伤类型、程度或范围、出血/肿胀/功能影响以及处理后的变化；例如“左前臂浅表擦伤，约2厘米，无活动性出血，屈伸受限不明显”。不要只写“受伤”“有伤口”或“看起来严重”。
-8. 勾选类字段的值必须是表内可对应的明确状态；自由字段和观察补记必须使用短句病历摘要，不写对话，不复述整段正文，不加入修辞。没有异常时使用“正常”“稳定”“未见明显异常”“无明显损伤”等明确记录用语。
-9. 四维异常、形态变化等虚构设定也按病例记录处理：描述 char 可观察的异常表现、影响范围、持续时间和当前风险，不使用玄学化、诗意化或无法核验的形容词。
-10. 永久记录只写关于 char 的、可长期追溯的事实及其结果，使用“日期/阶段 + 事件 + 已确认结果”的简洁格式；不要记录用户自身状态、当下情绪、无证据推测或没有后续价值的对话。
-
-三、当前状态字段与表内选项
-可使用以下字段名。它们是“当前值”，只写本轮首次出现或发生变化的字段；省略字段由插件沿用之前的值：
-日期、成长周期、形态、身体、体温、呼吸、循环、能量、损伤、驱动、疼痛、组织、观察重点、观察补记、精神、认知处理、行动、体位、活动量、应激、触碰耐受、感官、沟通、摄入、休眠、学习、四维异常、风险、处置、清洁状态、分泌情况、排泄情况、肌张力、三维稳定、自理、边界、适应。
-勾选字段必须优先使用以下表内选项原词；可在选项后追加简短医学限定，但不能只写表外同义词或模糊描述：
-${checklistGuide}
-
-四、状态更新规则
-1. 第一次建立状态时，优先填写日期、成长周期、形态、身体，以及正文中明确可观察的其他字段。当前表格完整度显示为未填满时，改用“完整表格模式”：无论本轮是否发生变化，都必须填写全部缺失字段；禁止只输出观察补记或变化字段。
-2. 对故事时间保持强感知。日期统一写成“第N天·时段”（已有明确年月日时可沿用该纪年）；同一天只改变时段不会换表，跨过午夜、明确出现“次日/翌日/第二天”或发生跨日时间跳跃时，必须更新日期，即使没有其他事件也不能省略状态行。
-3. 插件把跨日视为一张新的每日检查表：会清空昨天的身体、摄入、休眠、排泄、应激、处置等短期观察，只保留成长周期、形态和永久记录。因此换日状态行必须重新填写当日仍可确认的基础状态；未复查的项目不要照抄昨日结论。
-4. 损伤也属于每日复查项。换日时仍未痊愈的损伤必须在同一条换日状态行中重新写明；完全消失或确认没有新伤时写“无明显损伤”，不要让旧伤凭空痊愈，也不要用“未复查”填充完整表格。
-5. 当前状态是短期快照，不要把地点、好感度、依恋度、人性值或其他未定义数值塞进字段。
-6. 控制记录长度：日期不超过16字；勾选类字段不超过16字；身体、驱动、观察重点、处置等自由字段不超过36字；损伤不超过60字；观察补记不超过120字。只写临床式摘要，不重复正文原句。
-7. 不要因为这段规则被注入就强行改变角色行为；所有状态变化必须有剧情、对话或明确叙述依据。
-8. 体温、呼吸、循环、能量、疼痛、组织、精神、认知处理、行动、体位、活动量、应激、触碰耐受、感官、沟通、摄入、休眠、学习、四维异常、风险、清洁状态、分泌情况、排泄情况、肌张力、三维稳定、自理、边界、适应均为勾选类字段。每个字段必须至少命中一个上方列出的表内选项；如果没有异常，必须明确选择对应的正常/稳定/无/完整/未出现类选项。任一勾选类字段出现异常、恶化或相较当前快照发生变化时，除了更新该字段，还必须在同一状态行填写“观察补记=”，具体记录表现、发生条件、涉及部位（如适用）和变化结果；不得只写勾选结论。没有异常或变化时不要为此虚构补记。
-
-五、输出前强制核对
-1. 先确认所有字段描述的都是当前 char；若某句话的主语是用户或其他角色，必须改写为 char 的反应、观察条件或处置背景，或从状态行删除。
-2. 再确认每一个勾选字段都出现了上方的表内选项原词，并且前端能据此勾选；“情况良好”“基本正常”“似乎稳定”等表外近义词不能代替选项原词。
-3. 再确认文字符合病历记录：使用可观察事实、解剖部位、程度/范围、诱因/时间和处置结果；删除修辞、情绪判断、角色独白和无依据医学结论。
-4. 最后确认当前表格完整度。缺失字段列表不为无时，必须补齐所有缺失字段；任何一个字段未命中选项，都视为缺失。只有核对全部通过，才允许输出状态行。
-
-六、表格完整性
-1. 每个剧情日首次建立检查表，或跨日后短期字段被清空时，必须在同一条状态行中补齐“当前剧情日的表格尚未填满”所列的全部字段；不能只更新观察补记，也不能只填一两个勾选项。字段值没有命中表内选项时，仍视为缺失，必须改写为表内选项原词。
-2. 勾选类字段必须明确选择至少一个与表内选项对应的值；没有异常时也要填写正常、稳定、无、完整、未出现等实际选项，不能用空值、未记录或未复查占位。
-3. 只有当缺失字段列表显示为无，当前剧情日的整张表已经建立完成后，才允许在后续轮次只输出观察补记或单个发生变化的字段。跨入新剧情日后重新执行完整填写要求。
-
-七、永久记录
-发生了不可逆、值得长期保留的成长、学习、形态、记忆、关系或因果事实时，使用“记录+=”。它只追加，跨日不会清空，不能覆盖或删除旧记录。也可以使用“因果+=”“已学会+=”“形态库+=”“记忆+=”“关键事件+=”；这些都会进入永久档案。每条永久记录不超过60字，一个事实一条；多个独立事实可在同一状态行中分别使用多个“记录+=”。
-
-八、唯一格式
-[STATUS: 字段=值 | 字段=值 | 记录+=新的永久事实]
-字段值不得包含半角竖线 |。一条状态行只放本轮变化的字段；不要把上面所有字段重复输出。
-
-换日示例：
-[STATUS: 日期=第3天·清晨 | 身体=清醒，体温偏低 | 损伤=左上肢：咬伤未愈 | 摄入=未进食 | 休眠=浅眠]
-
-当前已知状态快照（由插件从本聊天已出现的状态行合并）：
-${snapshot.fields}
-
-当前表格完整度：
-${completeness}
-
-当前永久记录（由插件持久保存，只追加）：
-${snapshot.records}`;
+export function cleanTextCompletion(event, contract=buildStatusPrompt()) {
+    if (typeof event?.prompt === "string") event.prompt = cleanPromptText(event.prompt,contract);
 }

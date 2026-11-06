@@ -1,0 +1,102 @@
+{
+  "generator": "Built-in image_gen tool",
+  "date": "2026-11-05",
+  "researchSources": [
+    {
+      "title": "AAFS ASB Technical Report 033, First Edition, 2017",
+      "url": "https://www.aafs.org/sites/default/files/media/documents/033_TR_e1_2017.pdf",
+      "usedFor": "Terms in sections 2.16, 2.20, 2.29, 2.33, 2.35 and 2.37; concise original Chinese paraphrases"
+    },
+    {
+      "title": "UK Forensic Science Regulator — Bloodstain pattern analysis, July 2025",
+      "url": "https://www.gov.uk/government/publications/bloodstain-pattern-analysis-codes-of-practice/codes-of-practice-and-conduct-bloodstain-pattern-analysis-accessible",
+      "usedFor": "Surface effects, interpretation limits, possible causal mechanisms"
+    },
+    {
+      "title": "Yuen et al. — The Reliability of Swipe/Wipe Classification and Directionality Determination Methods in Bloodstain Pattern Analysis, 2017",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/28466493/",
+      "doi": "10.1111/1556-4029.13298",
+      "usedFor": "Distinguishing designed visual examples from experimentally validated classifications"
+    }
+  ],
+  "interpretation": "Generated artwork, not experimental bloodstain samples. Formation labels describe intended mechanisms and do not establish an actual event. Water variants are everyday material scenarios, not forensic classifications.",
+  "assets": [
+    {
+      "file": "human-outline-generated-v2.png",
+      "prompt": "Edit the supplied body illustration into a VERY SIMPLE flat medical body-map icon, not a realistic anatomy drawing.\nKeep the full body straight front view, separated legs, relaxed arms held a little away from the sides, overall proportions and full head-to-feet framing.\nRemove ALL muscles, skin texture, tonal shading, nipples, chest anatomy, finger wrinkles, tendons, realistic facial detail and dimensional rendering. The torso should be an empty neutral shape. Use one graceful clean muted warm-gray contour line to outline head, neck, shoulders, torso, arms, simplified five-finger hands, legs and feet. At most a few small economical joint indication strokes. No organs, no sex characteristics. Like a high-quality simple body diagram printed on a medical examination form, not a gym illustration, not a person photograph and not a 3D model.\nUse smooth restrained linework with only slightly varying thickness, visible at 140px wide. The drawing's interior is transparent or extremely faintly tinted; background and all gaps must be genuinely transparent alpha, no white rectangle, paper texture, shadows or glow. No words, no marks, no labels. Entire head, hands and feet visible.",
+      "transparentBackground": true,
+      "mode": "edit",
+      "source": "AI-generated for this project; original PNG copied unchanged"
+    },
+    {
+      "file": "blood-transfer-generated-v1.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: transparent raster decal for an aged paper medical form.\nCreate a highly convincing flat scanned DRIED BLOOD TRANSFER STAIN, blood only without any body or injury. A small asymmetrical rust-burgundy dried smear rubbed diagonally across absorbent paper, broken dark dense pigment islands, fibrous capillary feathering, irregular translucent thin edges, tiny gaps where dry paper fibers resisted ink, several scattered small droplets. Matte and absorbed, not glossy liquid, not thick paint. Uneven pressure and slight dragging, restrained real-world scale. Rich microtexture like a forensic scan, not a graphic symbol.\nComposition: landscape 3:2, one cohesive stain cluster with generous transparent space around its irregular boundary. No paper substrate or rectangular colored patch: show only the stain pigment on TRUE TRANSPARENT ALPHA, including transparent holes between fibers. Color must be muted dried oxblood and brown-red, never bright cartoon red. No objects, no hands, no text, no shadow, no checkerboard baked into image.",
+      "transparentBackground": true,
+      "mode": "generate",
+      "source": "AI-generated for this project; original PNG copied unchanged"
+    },
+    {
+      "file": "water-tidemark-generated-v1.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: transparent image decal of a dried water stain for layering over an old medical paper form.\nA very realistic scanned water-damage tide mark, an asymmetrical irregular partial wash boundary after plain water soaked an absorbent paper and dried. Pale translucent grey-beige mineral and cellulose residue, thin uneven sepia capillary outlines with interrupted feathery edges and a few faint receding drying fronts. Very subtle granular microtexture. No pooled liquid, no gloss. The center is almost entirely transparent. Organic uneven shape rather than a circular coffee cup ring; one open crescent with a broad shallow wavy edge, a few small satellite wisps. This must be quiet and restrained enough that printed text underneath remains completely readable.\nComposition landscape 3:2 with generous empty transparent space. Render ONLY the colored residues, with true alpha transparency throughout the empty center and the entire outside. Absolutely no paper rectangle, no solid white background, no shadow, no gray checkerboard graphic, no text, no objects, no bold cartoon outlines.",
+      "transparentBackground": true,
+      "mode": "generate",
+      "source": "AI-generated for this project; original PNG copied unchanged"
+    },
+    {
+      "file": "worn-paper-generated-v1.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: blank portrait paper background texture for a medical record web interface.\nCreate a true top-down high-resolution scan-like image of one old, heavily handled sheet of ordinary thin uncoated medical record paper. Portrait page ratio 3:4. Full page visible, completely straight, no perspective. The sheet nearly fills the image with only about 1 percent transparent margin.\nThe central 94 percent must be pale warm ivory, largely clean, extremely subtle paper fibers and a couple of almost invisible fold-pressure lines, suitable to print a dense medical form on. Authentic paper, not parchment or leather. Concentrate the wear within the outer 1 to 2 percent at all four edges: tiny missing irregular nicks, short fine splits, frayed cellulose fibers, uneven warm yellow and occasional brown oxidized edges, softened heavily handled corners. One very small folded/curling corner. Wear should be visible yet proportionate to a frequently used document, not a theatrical burned treasure map. Gentle nonuniform age discoloration, shallow handling dents.\nNo printing of any kind, no letters, no table lines, no stamps, no blood, no water ring, no objects, no dramatic stains across center.\nBackground outside the entire irregular page silhouette and inside edge nicks MUST be real transparent alpha, not white or a checkerboard picture. No desk, no surrounding environment, no external drop shadow. Only the paper, tiny realistic self-shadows within curled fibers and corner are allowed.",
+      "transparentBackground": true,
+      "mode": "generate",
+      "source": "AI-generated for this project; original PNG copied unchanged"
+    },
+    {
+      "file": "blood-drops-generated-v1.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: transparent dried blood decal for a paper document.\nShow a small natural group of blood DROPS that fell vertically onto absorbent paper and dried: 3 differently sized irregular round drops widely separated, one with a few minute radial satellite specks, and 6 sparse tiny pinprick flecks. Physically plausible flat absorbed pigment, fine capillary feathering, mottled rust-red interiors and dark burgundy drying rims. Very matte, no gloss or chunky crust. Real scanned texture, not vector circles or dramatic explosive splatter. No body, wound or injury.\nComposition: portrait 2:3, loose elongated diagonal arrangement with much clear negative space, largest drop only about 12% of canvas width. Do not crop any drop.\nOnly stain pigment, TRUE transparent alpha outside and between all drops. No paper patch, white mat, background glow, shadow, objects, text, checkerboard.",
+      "transparentBackground": true,
+      "mode": "generate",
+      "source": "AI-generated for this project; original PNG copied unchanged"
+    },
+    {
+      "file": "blood-grip-generated-v1.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: transparent blood transfer texture for a handled paper form.\nA faint dried bloody fingertip transfer left when someone gripped a document edge: two partial fingertip oval marks side by side, one slightly dragged downward, delicate broken fingerprint ridges, unequal contact pressure, sparse dust-like red-brown residue, subtle feathering into paper fibers. Only partial fingertip prints, NO actual hand, NO body, NO injury. The lighter lifted area has lots of transparent gaps. Dark muted rusty burgundy, matte flat pigment, not wet or glossy. Forensic macro scan realism, not a red rubber stamp, not a vector icon.\nComposition square, small cohesive irregular cluster centered, generous true transparent space around, whole cluster within frame.\nRender ONLY stain pigment on genuine transparent alpha. No paper texture sheet, rectangular matte, background glow, drop shadow, objects, text or baked checkerboard.",
+      "transparentBackground": true,
+      "mode": "generate",
+      "source": "AI-generated for this project; original PNG copied unchanged"
+    },
+    {
+      "file": "water-rain-generated-v1.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: transparent dried rain marks decal for an absorbent paper document.\nCreate a realistic scan of the subtle traces left by sparse RAINDROPS on paper after drying: around 12 small irregular pale beige-gray capillary outlines, of varied size, a few with overlapping half-rims and tiny feathered outward diffusion. Loose scattered arrangement, not an evenly spaced pattern. Empty transparent centers; the marks are thin discontinuous drying tide-lines with faint residual mineral granules. No visible wet water drops, no glass beads, no glossy reflections. Quiet barely-there residues, not coffee stains or bold brown circles. Scale like natural raindrops hitting a sheet left outdoors.\nComposition: landscape 3:2, most space empty. Flat overhead scan realism, fine fiberlike outlines.\nRender ONLY colored stain residue on TRUE transparent alpha; no paper sheet, no pale rectangular patch, no white background, no glow, no shadow, no text, no other objects, no checkerboard graphic.",
+      "transparentBackground": true,
+      "mode": "generate",
+      "source": "AI-generated for this project; original PNG copied unchanged"
+    },
+    {
+      "file": "water-edge-generated-v1.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: transparent edge-water-damage stain overlay for paper.\nA realistic aged water seepage TIDE LINE caused by the bottom edge of an absorbent document sitting in dampness and then drying. Long horizontal uneven branching front, little upward capillary spikes, 2 or 3 broken parallel receding wavy outlines, translucent diluted warm sepia mineral residue on the lower side and nearly empty clear space above. Fine fiber diffusion, irregular height and nonuniform density. It should resemble water damage on an archived medical sheet, never a coffee ring or ink brushstroke. Very pale and readable through. Flat overhead scan, no perspective, no glossy water.\nLandscape 3:1 strip composition, the trace runs horizontally across most of width but ends naturally inside frame, broad wispy residue beneath.\nOnly stain residue isolated on true transparent alpha. NO physical paper sheet, no rectangular background, no white patches, no backdrop glow, no drop shadow, no objects, no text, no checkerboard picture.",
+      "transparentBackground": true,
+      "mode": "generate",
+      "source": "AI-generated for this project; original PNG copied unchanged"
+    },
+    {
+      "file": "blood-flow-generated-v1.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: transparent decal for a fictional worn medical paper sheet.\nCreate a realistic dried blood FLOW trace: a small irregular starting patch with two narrow gravity-driven rivulets running downward, one longer than the other, slightly wavering near-parallel boundaries, a rounded terminal accumulation, subtle absorbent-fiber feathering at the edges. Muted dried reddish brown and burgundy with translucent thin sections; flat matte stain, no thick raised material or gloss. Whole trace visible, portrait 2:3 composition, narrow vertical stain centered with ample clear space on both sides. Inspired by the ASB TR 033 concept of flow due to gravity or movement of the stained surface, but this is an artistic illustration rather than forensic evidence. No hands, bodies, wounds, tools, labels or scale.\nTRUE transparent alpha background. Only pigment residue; no paper sheet, white patch, shadow, backdrop glow or checkerboard.",
+      "transparentBackground": true,
+      "mode": "generate",
+      "source": "AI-generated for this project; original PNG copied unchanged"
+    },
+    {
+      "file": "blood-wipe-generated-v1.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: transparent artistic bloodstain decal on a fictional medical form.\nDepict an altered dried blood WIPE pattern, clearly different from a new swipe transfer: an original irregular broad oval stain remains at left with a broken dark outer rim; a broad curved passage has removed much of its center, leaving a transparent swath, parallel faint streaks and a displaced lighter reddish residue dragged to the right. The alteration is the visual focus. Natural broken microtexture and slight capillary edges as if on paper, matte muted rust-burgundy pigment. Flat scanned stain, not brush paint, not an object or hand. Whole shape visible with generous margins, landscape 3:2.\nInspired by ASB TR 033 wipe concept: movement through a preexisting wet stain. Artistic example only, no claim of diagnostic accuracy. No crime scene, bodies, injuries, tools, labels or text.\nTRUE transparent alpha everywhere without stain, including the cleared passage. Only residue, no paper rectangle, no white matte, no glow, no shadows, no baked checkerboard.",
+      "transparentBackground": true,
+      "mode": "generate",
+      "source": "AI-generated for this project; original PNG copied unchanged"
+    },
+    {
+      "file": "blood-soak-generated-v1.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: transparent artistic blood saturation stain for an old paper form.\nA localized dried blood SATURATION stain where a small quantity accumulated and soaked into porous paper: asymmetrical rounded blot with a denser muted oxblood core, branching feathery capillary edge, broad very thin translucent rust-red diffusion beyond, tiny irregular clear gaps and paper-fiber-scale granularity. Entire shape flat and absorbed, no raised crust, no gloss, no unrealistic bright red paint. No explosive starburst, no droplets or drip trails, no handprint. The visual should be distinct from rubbing or splatter: soft irregular wicking.\nSquare composition, stain occupies central half with generous transparent margin. Inspired by ASB TR 033 saturation stain concept, but only a fictional texture design, not forensic evidence. No body, wounds, tools, text, arrows or scale.\nOnly pigment residue on TRUE transparent alpha, no physical paper sheet, no white rectangular matte, backdrop glow, shadow or checkerboard graphic.",
+      "transparentBackground": true,
+      "mode": "generate",
+      "source": "AI-generated for this project; original PNG copied unchanged"
+    }
+  ]
+}

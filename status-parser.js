@@ -1,4 +1,5 @@
-const STATUS_PATTERN = /\[STATUS\s*:\s*([^\]\r\n]+)\]/gi;
+import { statusRanges } from './status-envelope.js';
+const STATUS_PATTERN = /\[STATUS\s*:\s*([^\]]+)\]/gi;
 
 const FIELD_ALIASES = new Map([
     ["date", "date"],
@@ -171,6 +172,8 @@ const FIELD_ALIASES = new Map([
     ["关键事件", "record"],
     ["关系记录", "record"],
 ]);
+
+for(const key of Object.keys(createInitialStatus()))if(key!=='records')FIELD_ALIASES.set(key.toLowerCase(),key);
 
 export function createInitialStatus() {
     return {
@@ -385,10 +388,10 @@ export function parseStatusPayload(payload) {
 
 export function findStatusUpdates(text) {
     const updates = [];
-    for (const match of String(text).matchAll(STATUS_PATTERN)) {
-        const parsed = parseStatusPayload(match[1]);
+    for (const match of statusRanges(text).filter(range=>range.complete)) {
+        const parsed = parseStatusPayload(match.payload);
         if (parsed) {
-            updates.push({ ...parsed, raw: match[0] });
+            updates.push({ ...parsed, raw: match.raw });
         }
     }
 

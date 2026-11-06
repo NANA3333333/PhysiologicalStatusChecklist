@@ -1,248 +1,85 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>人形身体检查表预览</title>
-    <link rel="stylesheet" href="./style.css">
-    <style>
-        body { margin: 0; min-height: 100vh; background: #f6f1e9; color: #3d3935; font-family: "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif; }
-        #chat { padding: 20px; }
-    </style>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>纸上手记 · 四维生物字体预览</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./preview.css">
 </head>
 <body>
-    <main id="chat"><p>实体在安静的房间里观察着光线的变化。</p></main>
-
-    <button id="u4d-status-launcher" class="u4d-floating-launcher" type="button" aria-label="打开人形身体检查表" title="打开生理状态检查表">
-        <span class="u4d-launcher-icon" aria-hidden="true"><i class="fa-solid fa-person"></i></span>
-    </button>
-
-    <div id="u4d-inspection-root" class="u4d-inspection-root" hidden aria-hidden="true">
-        <section class="u4d-inspection-window" role="dialog" aria-label="人形身体检查表">
-            <div class="u4d-inspection-content">
-                <div class="u4d-report-stack" style="--u4d-scale: 0.5;">
-                <div class="u4d-exam-sheet">
-                    <button class="u4d-sheet-close" type="button" aria-label="关闭检查表">×</button>
-                    <header class="u4d-case-header">
-                        <div class="u4d-case-title-block"><span class="u4d-exam-kicker">病例记录 / 人形拟态观察表</span><h2>人形身体检查表</h2><p>当前身体状况、行为反应及损伤记录</p></div>
-                        <div class="u4d-case-date-block"><span>报告状态</span><strong>当前记录</strong></div>
-                    </header>
-                    <div class="u4d-report-meta">
-                        <div class="u4d-report-meta-cell"><span>受检对象</span><strong>未知实体</strong></div>
-                        <div class="u4d-report-meta-cell"><span>记录日期</span><strong>第 02 天 · 夜间</strong></div>
-                        <div class="u4d-report-meta-cell"><span>成长周期</span><strong>亚幼体 · 阶段 2</strong></div>
-                        <div class="u4d-report-meta-cell"><span>当前形态</span><strong>16 岁消瘦少年拟态</strong></div>
-                    </div>
-
-                    <div class="u4d-report-form">
-                        <div class="u4d-report-column u4d-report-column-left">
-                            <section class="u4d-report-section">
-                                <div class="u4d-report-section-heading"><strong>基本信息</strong><small>一般观察</small></div>
-                                <div class="u4d-lined-field"><strong>身体状态</strong><div class="u4d-lined-value">体温稳定；左侧咬合控制变差。</div><div class="u4d-lined-value"></div></div>
-                                <div class="u4d-checklist-field"><strong>体温调节</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>正常</span><span class="u4d-checkbox-option"><i></i>偏低</span><span class="u4d-checkbox-option"><i></i>偏高</span><span class="u4d-checkbox-option"><i></i>异常</span></div><div class="u4d-checklist-note">体温稳定，可自行调节。</div></div>
-                                <div class="u4d-checklist-field"><strong>呼吸状态</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>平稳</span><span class="u4d-checkbox-option"><i></i>急促</span><span class="u4d-checkbox-option"><i></i>浅弱</span><span class="u4d-checkbox-option"><i></i>异常</span></div><div class="u4d-checklist-note">呼吸平稳。</div></div>
-                                <div class="u4d-checklist-field"><strong>循环反应</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>稳定</span><span class="u4d-checkbox-option"><i></i>偏快</span><span class="u4d-checkbox-option"><i></i>偏弱</span><span class="u4d-checkbox-option"><i></i>异常</span></div><div class="u4d-checklist-note">循环稳定。</div></div>
-                                <div class="u4d-checklist-field"><strong>能量储备</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>充足</span><span class="u4d-checkbox-option is-checked"><i></i>不足</span><span class="u4d-checkbox-option"><i></i>枯竭</span><span class="u4d-checkbox-option"><i></i>恢复中</span></div><div class="u4d-checklist-note">能量储备不足。</div></div>
-                                <div class="u4d-lined-field"><strong>当前驱动</strong><div class="u4d-lined-value">贴近热源，确认拒绝是否意味着离开。</div><div class="u4d-lined-value"></div></div>
-                                <div class="u4d-lined-field"><strong>观察重点</strong><div class="u4d-lined-value">确认是否能接受拒绝。</div><div class="u4d-lined-value"></div></div>
-                            </section>
-                            <section class="u4d-report-section">
-                                <div class="u4d-report-section-heading"><strong>边界与处置</strong><small>反应 / 处置</small></div>
-                                <div class="u4d-checklist-field"><strong>疼痛反应</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>无明显</span><span class="u4d-checkbox-option is-checked"><i></i>轻微</span><span class="u4d-checkbox-option"><i></i>明显</span><span class="u4d-checkbox-option is-checked"><i></i>刺激性</span></div><div class="u4d-checklist-note">触碰伤处时回避。</div></div>
-                                <div class="u4d-checklist-field"><strong>风险评估</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>低风险</span><span class="u4d-checkbox-option is-checked"><i></i>需观察</span><span class="u4d-checkbox-option"><i></i>高风险</span><span class="u4d-checkbox-option"><i></i>不可接触</span></div><div class="u4d-checklist-note">需持续观察刺激反应。</div></div>
-                                <div class="u4d-lined-field"><strong>处置记录</strong><div class="u4d-lined-value">清洁伤口，观察出血变化。</div><div class="u4d-lined-value"></div></div>
-                            </section>
-                            <section class="u4d-report-section">
-                                <div class="u4d-report-section-heading"><strong>医嘱 / 备注</strong><small>补充记录</small></div>
-                                <div class="u4d-lined-field"><strong>观察补记</strong><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div></div>
-                            </section>
-                        </div>
-
-                        <div class="u4d-report-column u4d-report-column-center">
-                            <section class="u4d-report-section">
-                                <div class="u4d-report-section-heading"><strong>身体轮廓与损伤定位</strong><small>红色 × = 已记录损伤 / 浅色 × = 预制标记位</small></div>
-                                <div class="u4d-human-figure">
-                                    <div class="u4d-figure-map">
-                                        <img class="u4d-human-figure-image" src="./assets/human-outline.png" alt="人物正面轮廓图">
-                                        <div class="u4d-injury-layer" aria-label="损伤标记">
-                                            <span class="u4d-injury-marker head"><b aria-hidden="true">×</b><small></small></span>
-                                            <span class="u4d-injury-marker neck"><b aria-hidden="true">×</b><small></small></span>
-                                            <span class="u4d-injury-marker left-arm is-active"><b aria-hidden="true">×</b><small>左上肢 · 旧伤裂口</small></span>
-                                            <span class="u4d-injury-marker right-arm"><b aria-hidden="true">×</b><small></small></span>
-                                            <span class="u4d-injury-marker torso"><b aria-hidden="true">×</b><small></small></span>
-                                            <span class="u4d-injury-marker left-leg"><b aria-hidden="true">×</b><small></small></span>
-                                            <span class="u4d-injury-marker right-leg is-active"><b aria-hidden="true">×</b><small>右下肢 · 擦伤</small></span>
-                                        </div>
-                                    </div>
-                                    <span class="u4d-figure-caption u4d-figure-caption-head">正面 / 人形拟态</span>
-                                    <span class="u4d-figure-caption u4d-figure-caption-foot">预制损伤标记位</span>
-                                </div>
-                                <p class="u4d-diagram-note">角色只需在损伤字段中写部位与伤情，前端会自动激活对应的预制 ×。</p>
-                            </section>
-                            <section class="u4d-report-section">
-                                <div class="u4d-report-section-heading"><strong>损伤记录</strong><small>当前伤情</small></div>
-                                <div class="u4d-lined-field"><strong>当前损伤</strong><div class="u4d-lined-value">左上肢旧伤裂口，右下肢擦伤，轻度出血。</div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div></div>
-                            </section>
-                            <section class="u4d-report-section">
-                                <div class="u4d-report-section-heading"><strong>组织与异常</strong><small>外观 / 四维反应</small></div>
-                                <div class="u4d-checklist-field"><strong>皮肤 / 组织</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>完整</span><span class="u4d-checkbox-option"><i></i>红肿</span><span class="u4d-checkbox-option is-checked"><i></i>裂伤</span><span class="u4d-checkbox-option is-checked"><i></i>异常修复</span></div><div class="u4d-checklist-note">裂口边缘出现异常修复。</div></div>
-                                <div class="u4d-checklist-field"><strong>四维异常</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>无</span><span class="u4d-checkbox-option is-checked"><i></i>轻微</span><span class="u4d-checkbox-option"><i></i>明显</span><span class="u4d-checkbox-option"><i></i>扩散</span></div><div class="u4d-checklist-note">肢端偶发局部回弹。</div></div>
-                            </section>
-                            <section class="u4d-report-section">
-                                <div class="u4d-report-section-heading"><strong>认知与学习</strong><small>当前处理能力</small></div>
-                                <div class="u4d-checklist-field"><strong>认知处理</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>清楚</span><span class="u4d-checkbox-option"><i></i>迟缓</span><span class="u4d-checkbox-option"><i></i>混乱</span><span class="u4d-checkbox-option is-checked"><i></i>非人类逻辑</span></div><div class="u4d-checklist-note">依照气味和威胁处理信息。</div></div>
-                                <div class="u4d-checklist-field"><strong>学习 / 记忆</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>未出现</span><span class="u4d-checkbox-option is-checked"><i></i>进行中</span><span class="u4d-checkbox-option"><i></i>已形成</span><span class="u4d-checkbox-option"><i></i>反复</span></div><div class="u4d-checklist-note">正在建立拒绝与停止的联系。</div></div>
-                            </section>
-                            <section class="u4d-report-section">
-                                <div class="u4d-report-section-heading"><strong>主诉 / 自由记录</strong><small>横线补记</small></div>
-                                <div class="u4d-lined-field"><strong>补充记录</strong><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div><div class="u4d-lined-value"></div></div>
-                            </section>
-                        </div>
-
-                        <div class="u4d-report-column u4d-report-column-right">
-                            <section class="u4d-report-section">
-                                <div class="u4d-report-section-heading"><strong>专项检查</strong><small>勾选项目</small></div>
-                                <div class="u4d-checklist-field"><strong>精神 / 意识</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>清醒</span><span class="u4d-checkbox-option is-checked"><i></i>警觉</span><span class="u4d-checkbox-option is-checked"><i></i>惊恐</span><span class="u4d-checkbox-option"><i></i>混乱</span></div><div class="u4d-checklist-note">清醒，对声音有反应。</div></div>
-                                <div class="u4d-checklist-field"><strong>行动能力</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>可站立</span><span class="u4d-checkbox-option"><i></i>可行走</span><span class="u4d-checkbox-option"><i></i>可爬行</span><span class="u4d-checkbox-option is-checked"><i></i>受限</span></div><div class="u4d-checklist-note">可独立站立，步态不稳。</div></div>
-                                <div class="u4d-checklist-field"><strong>感官状态</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>正常</span><span class="u4d-checkbox-option is-checked"><i></i>敏锐</span><span class="u4d-checkbox-option"><i></i>迟钝</span><span class="u4d-checkbox-option is-checked"><i></i>异常刺激反应</span></div><div class="u4d-checklist-note">听觉灵敏，畏强光。</div></div>
-                                <div class="u4d-checklist-field"><strong>沟通 / 表达</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>无语言</span><span class="u4d-checkbox-option"><i></i>声音</span><span class="u4d-checkbox-option is-checked"><i></i>短句</span><span class="u4d-checkbox-option"><i></i>流畅</span></div><div class="u4d-checklist-note">仅能复述短句。</div></div>
-                                <div class="u4d-checklist-field"><strong>摄入情况</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>正常</span><span class="u4d-checkbox-option is-checked"><i></i>少量</span><span class="u4d-checkbox-option is-checked"><i></i>拒绝</span><span class="u4d-checkbox-option"><i></i>异常</span></div><div class="u4d-checklist-note">少量饮水，拒绝固体食物。</div></div>
-                                <div class="u4d-checklist-field"><strong>休眠情况</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>正常</span><span class="u4d-checkbox-option is-checked"><i></i>浅眠</span><span class="u4d-checkbox-option"><i></i>未休眠</span><span class="u4d-checkbox-option is-checked"><i></i>易醒</span></div><div class="u4d-checklist-note">浅眠，易被声音唤醒。</div></div>
-                            </section>
-                            <section class="u4d-report-section">
-                                <div class="u4d-report-section-heading"><strong>形态与适应</strong><small>成长记录</small></div>
-                                <div class="u4d-checklist-field"><strong>三维稳定度</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>稳定</span><span class="u4d-checkbox-option"><i></i>不稳定</span><span class="u4d-checkbox-option is-checked"><i></i>局部异常</span></div><div class="u4d-checklist-note">人形拟态稳定，局部组织仍有回弹。</div></div>
-                                <div class="u4d-checklist-field"><strong>自理能力</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>可独立</span><span class="u4d-checkbox-option is-checked"><i></i>部分</span><span class="u4d-checkbox-option"><i></i>无法</span></div><div class="u4d-checklist-note">可独立进食，无法完成清洁。</div></div>
-                                <div class="u4d-checklist-field"><strong>边界反应</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>可停止</span><span class="u4d-checkbox-option is-checked"><i></i>持续试探</span><span class="u4d-checkbox-option"><i></i>无法理解</span></div><div class="u4d-checklist-note">被拒绝后短暂停止，仍会观察对方。</div></div>
-                                <div class="u4d-checklist-field"><strong>社会适应</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>良好</span><span class="u4d-checkbox-option is-checked"><i></i>部分</span><span class="u4d-checkbox-option"><i></i>不足</span></div><div class="u4d-checklist-note">能够遵守室内规则，仍不理解隐私。</div></div>
-                            </section>
-                            <section class="u4d-report-section u4d-checklist-grid-section">
-                                <div class="u4d-report-section-heading"><strong>行为与反应</strong><small>追加观察</small></div>
-                                <div class="u4d-checklist-field"><strong>体位姿态</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>站立</span><span class="u4d-checkbox-option"><i></i>坐卧</span><span class="u4d-checkbox-option"><i></i>蜷缩</span><span class="u4d-checkbox-option is-checked"><i></i>失衡</span></div><div class="u4d-checklist-note">可独立站立，姿态仍不稳定。</div></div>
-                                <div class="u4d-checklist-field"><strong>活动量</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>静止</span><span class="u4d-checkbox-option is-checked"><i></i>偏低</span><span class="u4d-checkbox-option"><i></i>正常</span><span class="u4d-checkbox-option"><i></i>过度</span></div><div class="u4d-checklist-note">大部分时间保持观察姿势。</div></div>
-                                <div class="u4d-checklist-field"><strong>应激反应</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>稳定</span><span class="u4d-checkbox-option is-checked"><i></i>警戒</span><span class="u4d-checkbox-option"><i></i>逃避</span><span class="u4d-checkbox-option"><i></i>攻击</span></div><div class="u4d-checklist-note">被突然靠近时提高警戒。</div></div>
-                                <div class="u4d-checklist-field"><strong>触碰耐受</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>可接触</span><span class="u4d-checkbox-option is-checked"><i></i>局部回避</span><span class="u4d-checkbox-option"><i></i>强烈回避</span><span class="u4d-checkbox-option"><i></i>无反应</span></div><div class="u4d-checklist-note">仅回避左上肢旧伤处。</div></div>
-                            </section>
-                            <section class="u4d-report-section u4d-checklist-grid-section">
-                                <div class="u4d-report-section-heading"><strong>卫生与生理</strong><small>护理观察</small></div>
-                                <div class="u4d-checklist-field is-compact"><strong>清洁状态</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>清洁</span><span class="u4d-checkbox-option is-checked"><i></i>需协助</span><span class="u4d-checkbox-option"><i></i>拒绝清洁</span><span class="u4d-checkbox-option"><i></i>未处理</span></div></div>
-                                <div class="u4d-checklist-field is-compact"><strong>分泌情况</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>无</span><span class="u4d-checkbox-option is-checked"><i></i>少量</span><span class="u4d-checkbox-option"><i></i>明显</span><span class="u4d-checkbox-option"><i></i>异常</span></div></div>
-                                <div class="u4d-checklist-field is-compact"><strong>排泄情况</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option is-checked"><i></i>正常</span><span class="u4d-checkbox-option"><i></i>减少</span><span class="u4d-checkbox-option"><i></i>异常</span><span class="u4d-checkbox-option"><i></i>未记录</span></div></div>
-                                <div class="u4d-checklist-field is-compact"><strong>肌张力</strong><div class="u4d-checkbox-options"><span class="u4d-checkbox-option"><i></i>正常</span><span class="u4d-checkbox-option is-checked"><i></i>紧张</span><span class="u4d-checkbox-option"><i></i>松弛</span><span class="u4d-checkbox-option"><i></i>痉挛</span></div></div>
-                            </section>
-                        </div>
-                    </div>
-
-                    <section class="u4d-report-section u4d-report-archive">
-                        <div class="u4d-report-section-heading"><strong>永久病历归档</strong><small>长期记录 · 只追加</small><span class="u4d-archive-count">02 条</span></div>
-                        <ol class="u4d-archive-list"><li><span class="u4d-archive-index">01.</span><span>第一次理解“睡觉”可能意味着拒绝。</span></li><li><span class="u4d-archive-index">02.</span><span>学会在对方沉默时停止追问。</span></li></ol>
-                    </section>
-                    <footer class="u4d-exam-footer"><span>病例档案 / 当前记录</span><span>记录表 01</span></footer>
-                </div>
-                </div>
-            </div>
+  <header class="topbar"><a class="brand" href="./preview.html"><span class="brand-mark">四</span> 四维生物 <span class="brand-divider">/</span> <span class="brand-sub">检查表实验室</span></a><span class="license-badge"><i></i> 五款笔迹 · 开源 / 个人非商用</span></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">HANDWRITING STUDY · 03</p><h1>表格印好，记录手写。</h1><p class="intro-copy">标题、字段名和选项用正常印刷字体。医生填写的内容、批注和勾记，才留下笔迹。</p></div><div class="intro-note">固定内容始终保持原样<br>切换字体只影响手写部分</div></div>
+    <div class="workspace">
+      <aside class="controls" aria-label="预览设置">
+        <details class="font-picker"><summary>笔迹字体 <span id="font-choice-name">新蒂手札体</span></summary><fieldset class="font-options"><legend><span>01</span> 选择笔迹</legend>
+          <p class="font-group">个人非商用 · 本机试用</p>
+          <label class="font-option"><input type="radio" name="font" value="journal" checked><span class="font-meta"><strong>新蒂手札体</strong><small>连笔随手记录，先看这一款</small></span><span class="sample sample-journal">清醒，肢端偏冷。</span><span class="font-tag">个人非商用许可</span></label>
+          <label class="font-option"><input type="radio" name="font" value="fountain"><span class="font-meta"><strong>新蒂美工钢笔</strong><small>钢笔笔触，粗细变化更明显</small></span><span class="sample sample-fountain">清醒，肢端偏冷。</span><span class="font-tag">个人非商用许可</span></label>
+          <p class="font-group">开源 · 可随插件分发</p>
+          <label class="font-option"><input type="radio" name="font" value="yozai"><span class="font-meta"><strong>悠哉字体</strong><small>自由、纤细的日常笔迹</small></span><span class="sample sample-yozai">清醒，肢端偏冷。</span><span class="font-tag">OFL 1.1 · 手写感优先</span></label>
+          <label class="font-option"><input type="radio" name="font" value="wenkai"><span class="font-meta"><strong>霞鹜文楷</strong><small>端正、清晰的记录感</small></span><span class="sample sample-wenkai">清醒，肢端偏冷。</span><span class="font-tag">易读优先</span></label>
+          <label class="font-option"><input type="radio" name="font" value="xiaolai"><span class="font-meta"><strong>小赖字体</strong><small>松弛、圆润的手记感</small></span><span class="sample sample-xiaolai">清醒，肢端偏冷。</span><span class="font-tag">随性风格</span></label>
+          <p class="font-group">英文开源 · English handwriting</p>
+          <label class="font-option"><input type="radio" name="font" value="caveat"><span class="font-meta"><strong>Caveat</strong><small>松弛的英文随手笔记</small></span><span class="sample" style="font-family:U4DCaveat">Continue observation.</span><span class="font-tag">SIL OFL 1.1</span></label>
+          <label class="font-option"><input type="radio" name="font" value="kalam"><span class="font-meta"><strong>Kalam</strong><small>清晰的英文病例记录</small></span><span class="sample" style="font-family:U4DKalam">Continue observation.</span><span class="font-tag">SIL OFL 1.1</span></label>
+          <label class="font-option"><input type="radio" name="font" value="patrickhand"><span class="font-meta"><strong>Patrick Hand</strong><small>圆润、整齐的英文手写</small></span><span class="sample" style="font-family:U4DPatrickHand">Continue observation.</span><span class="font-tag">SIL OFL 1.1</span></label>
+          <a href="./case-demo.html?v=english-fonts-9">打开可切换中英文表头的病例预览 ↗</a>
+          </fieldset></details>
+        <section class="adjustments"><h2><span>02</span> 字号与纸面</h2>
+          <div class="type-size-controls">
+            <label class="range-label" for="print-size">印刷字号 <output id="print-size-value">100%</output></label><input id="print-size" type="range" min="80" max="130" value="100" step="5" aria-describedby="print-size-hint">
+            <p class="hint" id="print-size-hint">调节标题、表头和固定选项。放大时纸面自动延长，保留全部栏位。</p>
+            <label class="range-label" for="font-size">手写字号 <output id="font-size-value">15 px</output></label><input id="font-size" type="range" min="11" max="18" value="15" step="0.5">
+          </div>
+          <div class="preset-buttons" aria-label="效果预设"><button type="button" data-preset="clean" aria-pressed="false">干净对照</button><button type="button" data-preset="daily" aria-pressed="false">日常记录</button><button type="button" data-preset="hurried" aria-pressed="false">匆忙填写</button><button type="button" data-preset="scene" aria-pressed="true">现场凌乱</button></div>
+          <label class="range-label" for="strength">书写起伏 <output id="strength-value">260%</output></label><input id="strength" type="range" min="0" max="400" value="260" step="10"><p class="hint">字的高低、大小、角度和间距一起变化；上方近看笔迹也会同步变化。</p>
+          <label class="range-label" for="messiness">潦草程度 <output id="messiness-value">65%</output></label><input id="messiness" type="range" min="0" max="100" value="65" step="5">
+          <label class="range-label" for="blur">局部模糊 <output id="blur-value">35%</output></label><input id="blur" type="range" min="0" max="100" value="35" step="5">
+          <fieldset class="ink-options"><legend>墨色</legend><label title="蓝黑墨水"><input type="radio" name="ink" value="#263d56" checked><span style="--swatch:#263d56">蓝黑</span></label><label title="石墨色"><input type="radio" name="ink" value="#393633"><span style="--swatch:#393633">石墨</span></label><label title="棕色墨水"><input type="radio" name="ink" value="#714c37"><span style="--swatch:#714c37">棕墨</span></label></fieldset>
+          <div class="lighting-controls"><p class="source-kicker">纸面光线</p>
+            <div class="light-buttons" aria-label="光照情境"><button type="button" data-light="diffuse" aria-pressed="false">柔和散光</button><button type="button" data-light="window" aria-pressed="true">窗边侧光</button><button type="button" data-light="shade" aria-pressed="false">局部遮阴</button></div>
+            <label class="range-label" for="light-strength">明暗强度 <output id="light-strength-value">70%</output></label><input id="light-strength" type="range" min="0" max="100" value="70" step="5">
+            <p class="hint">光线同时落在纸张和字迹上。调到 0 可对比原有纸纹。</p>
+          </div>
+          <div class="marks-controls"><p class="source-kicker">纸面痕迹</p>
+            <label class="range-label" for="strike">划掉的字 <output id="strike-value">70%</output></label><input id="strike" type="range" min="0" max="100" value="70" step="5">
+            <label class="range-label" for="scribble">反复涂抹 <output id="scribble-value">65%</output></label><input id="scribble" type="range" min="0" max="100" value="65" step="5">
+            <label class="select-label" for="water-scene">水痕形成情境</label><select id="water-scene" aria-describedby="water-formation"></select><p class="formation-note" id="water-formation"></p>
+            <label class="range-label" for="water">干涸水痕 <output id="water-value">65%</output></label><input id="water" type="range" min="0" max="100" value="65" step="5">
+            <label class="select-label" for="blood-scene">血迹形成方式</label><select id="blood-scene" aria-describedby="blood-formation"></select><p class="formation-note" id="blood-formation"></p>
+            <label class="range-label" for="blood">血迹 <output id="blood-value">58%</output></label><input id="blood" type="range" min="0" max="100" value="58" step="1">
+            <p class="hint">划线与涂抹落在「观察补记」。调到 0 可移除痕迹、查看原文。</p><button type="button" id="new-marks" class="reset">换一组痕迹</button>
+          </div>
+          <label class="text-label" for="custom-text">换一句话试写</label><textarea id="custom-text" rows="3" maxlength="600">触碰后左手短暂回缩，未见持续抖动。末梢触觉仍保留。</textarea><p class="hint">实时写入检查表的「观察补记」。</p>
+          <button type="button" id="reset" class="reset">恢复默认</button>
         </section>
+        <section class="font-source"><p class="source-kicker">当前字体来源</p><h3 id="source-title">新蒂手札体</h3><p id="source-desc">正在载入字体信息。</p><div><a id="source-link" href="https://sentyfont.cn/journal.htm" target="_blank" rel="noopener">作者页面 ↗</a><a id="license-link" href="https://sentyfont.cn/terms%20and%20conditions.htm" target="_blank" rel="noopener">授权说明 ↗</a></div><p class="license-note" id="license-note"></p></section>
+      </aside>
+      <section class="preview-area" aria-label="检查表预览">
+        <div class="preview-toolbar"><div><span class="live-dot"></span><strong id="current-name">新蒂手札体</strong><span id="font-status" role="status">正在载入字体…</span></div><div class="zoom-controls"><button id="fit" type="button" aria-pressed="true">适应页面</button><button id="actual" type="button" aria-pressed="false">原尺寸</button></div></div>
+        <div class="type-boundary"><div><span class="boundary-label">印刷字段 · 单独调节字号</span><strong>身体状态</strong><span class="boundary-options">□ 清醒　□ 嗜睡　□ 昏迷</span></div><div><span class="boundary-label">近看笔迹 · 随调节同步变化</span><span class="boundary-writing" data-u4d-writing="true">清醒，肢端偏冷。继续观察。</span></div></div>
+        <div class="paper-stage" id="paper-stage"><div class="paper-sizer" id="paper-sizer"><div id="u4d-inspection-root" class="u4d-inspection-root preview-paper"><div class="loading" role="status">正在铺开检查表…</div></div></div></div>
+        <div class="paper-caption"><span>人形身体检查表 / 示例数据</span><span id="type-size-caption">印刷文字 10–12 px · 点击「原尺寸」近看</span></div>
+        <details class="lighting-references"><summary>纸张与印刷效果参考</summary><p>参考真实文档照片中连续的明暗过渡，以及侧光下的纸纹和折痕。印刷文字保持规则排列，纸面统一受光，折线附近才发生轻微变形和断墨。</p><p><a href="https://cxh-research.github.io/DocShadow-SD7K/" target="_blank" rel="noopener">SD7K · 真实文档光影照片 ↗</a><a href="https://www.canada.ca/en/conservation-institute/services/learning-activities/lighting-techniques.html" target="_blank" rel="noopener">加拿大文物保护研究所 · 摄影光照 ↗</a></p></details>
+        <section class="stain-library" aria-labelledby="stain-library-title">
+          <div class="library-heading"><div><p class="source-kicker">PAPER TRACES · 09</p><h2 id="stain-library-title">每种痕迹，都有来处。</h2></div><a href="#paper-stage" class="back-to-paper">回到纸面 ↑</a></div>
+          <p class="library-intro">六类血迹、三类水痕。点选素材，查看它落在纸上的样子。</p>
+          <div id="stain-cards" class="stain-grid"></div>
+          <p id="stain-selection-status" class="formation-note" role="status"></p>
+          <details class="stain-references"><summary>形成方式与参考资料</summary>
+            <p>血迹术语参考 ASB TR 033（2017），水痕按日常受潮情境设计。以上图片均为绘图模型生成的视觉素材，并非实验样本；形成方式是设计设定，不能由一张纹理确定现场经过、血迹年龄或具体动作。承载材料也会改变痕迹外观。</p>
+            <p><a href="https://www.aafs.org/asb-standard/terms-and-definitions-bloodstain-pattern-analysis" target="_blank" rel="noopener">AAFS · ASB TR 033 术语 ↗</a><a href="https://www.gov.uk/government/publications/bloodstain-pattern-analysis-codes-of-practice/codes-of-practice-and-conduct-bloodstain-pattern-analysis-accessible" target="_blank" rel="noopener">英国法庭科学监管机构 · 分析指南 ↗</a></p>
+            <p>Swipe 和 Wipe 的分类及方向判断存在误判可能，参见 <a href="https://pubmed.ncbi.nlm.nih.gov/28466493/" target="_blank" rel="noopener">Yuen 等，2017 年可靠性研究 ↗</a>。</p>
+            <p><a href="./assets/generated-assets.json" target="_blank" rel="noopener">生成素材与提示词记录 ↗</a></p>
+          </details>
+        </section>
+        <section class="chat-preview"><p class="source-kicker">在聊天正文中的显示</p><div id="chat-example"></div></section>
+      </section>
     </div>
-    <script>
-        (() => {
-            const root = document.querySelector("#u4d-inspection-root");
-            const windowElement = document.querySelector(".u4d-inspection-window");
-            const stack = document.querySelector(".u4d-report-stack");
-            const launcher = document.querySelector("#u4d-status-launcher");
-            const close = document.querySelector(".u4d-sheet-close");
-            const isMobile = () => {
-                const shortEdge = Math.min(window.innerWidth, window.innerHeight);
-                const hasTouchInput = navigator.maxTouchPoints > 0 || window.matchMedia?.("(pointer: coarse)")?.matches;
-                return window.innerWidth <= 680 || (hasTouchInput && shortEdge <= 680);
-            };
-            const baseWidth = 840;
-            const baseHeight = 1120;
-            const getInitialZoom = () => {
-                if (!isMobile()) {
-                    return 0.5;
-                }
-
-                const fitZoom = window.innerWidth > window.innerHeight
-                    ? Math.min(
-                        (window.innerWidth - 36) / (baseWidth * 2 + 18),
-                        (window.innerHeight - 20) / baseHeight,
-                    )
-                    : Math.min(
-                        (window.innerWidth - 16) / baseWidth,
-                        (window.innerHeight - 32) / (baseHeight * 2),
-                    );
-                return Math.max(0.18, Math.round(fitZoom * 100) / 100);
-            };
-            let zoom = getInitialZoom();
-            let drag;
-
-            const applyZoom = () => {
-                stack.style.setProperty("--u4d-base-width", `${baseWidth}px`);
-                stack.style.setProperty("--u4d-base-height", `${baseHeight}px`);
-                stack.style.setProperty("--u4d-scale", String(zoom));
-                windowElement.style.width = `${baseWidth * zoom}px`;
-                windowElement.style.height = `${baseHeight * zoom}px`;
-            };
-
-            stack.addEventListener("wheel", event => {
-                event.preventDefault();
-                zoom = Math.min(1.35, Math.max(0.18, Math.round((zoom + (event.deltaY < 0 ? 0.06 : -0.06)) * 100) / 100));
-                applyZoom();
-            }, { passive: false });
-
-            stack.addEventListener("pointerdown", event => {
-                if (event.button !== 0 || event.target.closest("button")) {
-                    return;
-                }
-
-                const rect = windowElement.getBoundingClientRect();
-                windowElement.style.left = `${rect.left}px`;
-                windowElement.style.top = `${rect.top}px`;
-                windowElement.style.transform = "none";
-                drag = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, left: rect.left, top: rect.top };
-                stack.classList.add("is-dragging");
-                stack.setPointerCapture(event.pointerId);
-                event.preventDefault();
-            });
-
-            stack.addEventListener("pointermove", event => {
-                if (!drag || event.pointerId !== drag.pointerId) {
-                    return;
-                }
-
-                windowElement.style.left = `${drag.left + event.clientX - drag.startX}px`;
-                windowElement.style.top = `${drag.top + event.clientY - drag.startY}px`;
-                event.preventDefault();
-            });
-
-            const endDrag = event => {
-                if (!drag || event.pointerId !== drag.pointerId) {
-                    return;
-                }
-
-                drag = undefined;
-                stack.classList.remove("is-dragging");
-                stack.releasePointerCapture?.(event.pointerId);
-            };
-            stack.addEventListener("pointerup", endDrag);
-            stack.addEventListener("pointercancel", endDrag);
-            close.addEventListener("click", () => {
-                root.hidden = true;
-                root.setAttribute("aria-hidden", "true");
-                launcher.classList.remove("is-open");
-                document.body.style.overflow = "";
-                document.documentElement.style.overflow = "";
-            });
-            launcher.addEventListener("click", () => {
-                root.hidden = false;
-                root.setAttribute("aria-hidden", "false");
-                launcher.classList.add("is-open");
-                document.body.style.overflow = "hidden";
-                document.documentElement.style.overflow = "hidden";
-            });
-            window.addEventListener("resize", applyZoom, { passive: true });
-            applyZoom();
-        })();
-    </script>
+    <footer class="page-footer"><span>纸上手记 · 字体比较预览</span><span>三款 OFL 开源字体、两款个人非商用候选。字体均取自作者页面；未复制模拟器资源。</span></footer>
+  </main>
+  <iframe id="source-renderer" src="./tests/host.html?preview=1" hidden title="示例检查表渲染器"></iframe>
+  <script type="module" src="./preview.js"></script>
 </body>
 </html>
