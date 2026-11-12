@@ -1,0 +1,35 @@
+{
+  "updated": "2026-11-05",
+  "scope": "Typography, simulated ink coverage and shared paper illumination. No research photograph or simulator font is included in the plugin.",
+  "local_simulator": {
+    "name": "手写模拟器 v2.2",
+    "inspected": ["Parameter/背景1.json", "Parameter/Users/测试.json", "tutorial text", "应用案例/3.png"],
+    "observed_parameters": ["font_size", "line_spacing", "word_spacing", "font_size_sigma", "word_spacing_sigma", "perturb_x_sigma", "perturb_y_sigma", "perturb_theta_sigma"],
+    "finding": "Readable configuration controls spacing and per-glyph perturbation. No lighting control found there. The executable source was not available; no claim about its internal rendering implementation."
+  },
+  "references": [
+    {
+      "title": "High-resolution Document Shadow Removal / SD7K, ICCV 2023",
+      "url": "https://cxh-research.github.io/DocShadow-SD7K/",
+      "use": "Inspected photographed printed and handwritten documents in the visualization figures. Broad shadows vary paper and ink together; letter edges remain locally detailed."
+    },
+    {
+      "title": "Canadian Conservation Institute: Lighting Techniques for Photographing Heritage Objects",
+      "url": "https://www.canada.ca/en/conservation-institute/services/learning-activities/lighting-techniques.html",
+      "use": "Raking light reveals surface relief, creases and damage; diffuse light reduces this contrast."
+    },
+    {
+      "title": "Yale: Visible Light Imaging",
+      "url": "https://digitalcoffee.yale.edu/visible-light-imaging",
+      "use": "Diffuse illumination and consistent light falloff across a document, avoiding conflicting shadows."
+    }
+  ],
+  "implementation": {
+    "base_sheet_px": [840, 1120],
+    "printed_type_px": {"title": 24, "section": 12, "field": 11, "option": 10, "secondary": 8},
+    "writing_preview_default_px": 15,
+    "material": "Deterministic subpixel ink coverage, very mild optical softening, multiplicative ink on existing paper; existing crease displacement and abrasion remain.",
+    "light": "Diffuse, top-left window light and soft diagonal shade; shadows and reflected light cover both paper and all marks, masked by the paper alpha silhouette. Crease relief uses the same coordinates as the displaced ink.",
+    "limitation": "Art-directed 2D approximation; the generated paper already contains baked-in texture and lighting. This is not physically based 3D relighting."
+  }
+}

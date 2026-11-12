@@ -1,10 +1,17 @@
-import { characters, chat_metadata, eventSource, event_types, extension_prompt_roles, extension_prompt_types, saveChatDebounced, setExtensionPrompt, this_chid } from "../../../../script.js";
-import { applyStatusUpdate, createInitialStatus, findStatusUpdates, getStoryDayKey, hideStatusMarkup, removeLegacyStatusMarkup } from "./status-parser.js";
-import { buildStatusPrompt, STATUS_PROMPT_KEY } from "./status-prompt.js";
+import { characters, eventSource, event_types, extension_prompt_roles, extension_prompt_types, setExtensionPrompt, this_chid } from "../../../../script.js";
+import { createInitialStatus, getStoryDayKey } from "./status-parser.js";
+import { buildStatusPrompt, cleanChatCompletion, cleanTextCompletion, STATUS_PROMPT_KEY } from "./status-prompt.js";
 import { CHECKLIST_FIELDS, matchesChecklistOption } from "./status-fields.js";
+import { detachChatStatus, readTimeline } from "./status-store.js";
+import { renderStatusFold } from "./status-fold.js";
+import { applyHandwriting } from "./handwriting.js";
+import { applyPaperSurface } from "./paper-surface.js";
+import { caseProfile, fontStack } from './case-protocol.js';
+import { getCaseSettings, createCaseSettingsButton } from './case-settings.js';
+import { renderCasePresentation } from './case-renderer.js';
+import { EN_CHECKLIST, localizePaper, printedText } from './case-language.js';
 
 const TARGET_EXTENSION = "u4d_status_panel";
-const STATUS_METADATA_KEY = "u4d_status_state";
 const LAUNCHER_ID = "u4d-status-launcher";
 const INSPECTION_ID = "u4d-inspection-root";
 const LAUNCHER_POSITION_KEY = "u4d_status_launcher_position";
@@ -58,13 +65,40 @@ let dateInspectionPointers = new Map();
 let inspectionPinch;
 let dateInspectionPinch;
 let viewportMode = getViewportMode();
+let mobileSheet = "record";
+const inspectionScrolls = new Map();
+let recordingStatus = "检查结果仅用于表格，随当前聊天保存";
+let initialized = false;
+let currentStatusContract = buildStatusPrompt();
+let casePresentation;
+let reportBaseHeight = BASE_REPORT_HEIGHT;
+function activeCaseProfile() {
+    const settings=getCaseSettings(SillyTavern.getContext());
+    return {...caseProfile(settings,getCharacterName()),explicitPatient:Boolean(settings.patient)};
+}
+
+function updateRecordingStatus(text) {
+    recordingStatus = text;
+    inspectionRoot?.querySelectorAll(".u4d-recording-status").forEach(element => { element.textContent = printedText(text,getCaseSettings(SillyTavern.getContext()).language); });
+}
 
 function getViewportMode() {
     if (!isMobileViewport()) {
         return "desktop";
     }
 
-    return window.innerWidth > window.innerHeight ? "mobile-landscape" : "mobile-portrait";
+    const {width,height}=getMobileViewport();
+    return width > height ? "mobile-landscape" : "mobile-portrait";
+}
+
+function getMobileViewport() {
+    // Mobile Chrome may expand innerWidth to fit overflowing transformed content.
+    // The screen dimensions remain in CSS pixels and keep phone layout from
+    // temporarily switching to the desktop layout during orientation changes.
+    const touch=navigator.maxTouchPoints>0||window.matchMedia?.('(pointer:coarse)')?.matches;
+    const phone=touch&&Math.min(screen.width,screen.height)<=MOBILE_BREAKPOINT;
+    return {width:phone?Math.min(innerWidth,screen.width):innerWidth,
+        height:phone?Math.min(innerHeight,screen.height):innerHeight};
 }
 
 function isMobileViewport() {
@@ -74,15 +108,16 @@ function isMobileViewport() {
 
     const shortEdge = Math.min(window.innerWidth, window.innerHeight);
     const hasTouchInput = navigator.maxTouchPoints > 0 || window.matchMedia?.("(pointer: coarse)")?.matches;
-    return window.innerWidth <= MOBILE_BREAKPOINT || (hasTouchInput && shortEdge <= MOBILE_BREAKPOINT);
+    return window.innerWidth <= MOBILE_BREAKPOINT || (hasTouchInput &&
+        (shortEdge <= MOBILE_BREAKPOINT || Math.min(screen.width,screen.height)<=MOBILE_BREAKPOINT));
 }
 
 function getReportDimensions() {
     return {
         baseWidth: BASE_REPORT_WIDTH,
-        baseHeight: BASE_REPORT_HEIGHT,
+        baseHeight: reportBaseHeight,
         width: BASE_REPORT_WIDTH * reportZoom,
-        height: BASE_REPORT_HEIGHT * reportZoom,
+        height: reportBaseHeight * reportZoom,
     };
 }
 
@@ -127,24 +162,25 @@ function isTargetCharacter() {
     return data.extensions?.[TARGET_EXTENSION]?.enabled !== false;
 }
 
-function clearStatusPrompt() {
-    setExtensionPrompt(STATUS_PROMPT_KEY, "", extension_prompt_types.NONE, 0, false, extension_prompt_roles.SYSTEM);
+function updateStatusPrompt() {
+    const active = isTargetCharacter();
+    currentStatusContract=buildStatusPrompt(activeCaseProfile());
+    setExtensionPrompt(STATUS_PROMPT_KEY, active ? currentStatusContract : "",
+        active ? extension_prompt_types.IN_PROMPT : extension_prompt_types.NONE, 0, false, extension_prompt_roles.SYSTEM);
 }
 
-function updateStatusPrompt(status = latestStatus) {
-    if (!isTargetCharacter()) {
-        clearStatusPrompt();
-        return;
+function detachChatFields() {
+    if (!isTargetCharacter()) return;
+    const context = SillyTavern.getContext();
+    const changed = detachChatStatus(context.chat ?? []);
+    if (changed) {
+        // Save the messages, not just chat metadata: this includes per-swipe extras.
+        const save = context.saveChat?.() ?? context.saveChatConditional?.();
+        if (save?.catch) save.catch(error => {
+            console.warn("[PhysiologicalStatusChecklist] Could not save detached fields", error);
+            updateRecordingStatus("保存失败，请检查聊天存储后重试");
+        });
     }
-
-    setExtensionPrompt(
-        STATUS_PROMPT_KEY,
-        buildStatusPrompt(status),
-        extension_prompt_types.IN_CHAT,
-        0,
-        false,
-        extension_prompt_roles.SYSTEM,
-    );
 }
 
 function getCharacterName() {
@@ -233,6 +269,7 @@ function selectHistoryDay(dayKey) {
 
     selectedHistoryDayKey = dayKey;
     renderInspectionContent(entry.snapshot);
+    if (isMobileViewport()) { showMobilePaper('record'); return; }
     inspectionWindow.hidden = false;
     inspectionWindow.style.zIndex = "2";
     dateInspectionWindow.style.zIndex = "1";
@@ -374,7 +411,7 @@ function createHumanFigure() {
     figure.setAttribute("aria-label", "人形拟态扫描轮廓");
     figure.innerHTML = `
         <div class="u4d-figure-map">
-            <img class="u4d-human-figure-image" src="${new URL("./assets/human-outline.png", import.meta.url).href}" alt="人物正面轮廓图">
+            <img class="u4d-human-figure-image" src="${new URL("./assets/human-outline-generated-v2.png", import.meta.url).href}" alt="人物正面轮廓图">
             <div class="u4d-injury-layer" aria-label="损伤标记"></div>
         </div>
         <span class="u4d-figure-caption u4d-figure-caption-head">正面 / 人形拟态</span>
@@ -383,13 +420,13 @@ function createHumanFigure() {
 }
 
 const INJURY_LOCATIONS = [
-    { pattern: /(头|颅|面|眼|耳|鼻|口)/u, className: "head", label: "头面部", position: "head" },
-    { pattern: /(颈|喉)/u, className: "neck", label: "颈部", position: "neck" },
-    { pattern: /(左肩|左臂|左上肢|左手|左前臂|左肘|左腕)/u, className: "left-arm", label: "左上肢", position: "left-arm" },
-    { pattern: /(右肩|右臂|右上肢|右手|右前臂|右肘|右腕)/u, className: "right-arm", label: "右上肢", position: "right-arm" },
-    { pattern: /(胸|腹|躯干|背)/u, className: "torso", label: "躯干", position: "torso" },
-    { pattern: /(左腿|左下肢|左膝|左脚|左大腿|左小腿|左踝)/u, className: "left-leg", label: "左下肢", position: "left-leg" },
-    { pattern: /(右腿|右下肢|右膝|右脚|右大腿|右小腿|右踝)/u, className: "right-leg", label: "右下肢", position: "right-leg" },
+    { pattern: /(头|颅|面|眼|耳|鼻|口)|\b(head|face|eye|ear|nose|mouth|skull)\b/iu, className: "head", label: "头面部", position: "head" },
+    { pattern: /(颈|喉)|\b(neck|throat)\b/iu, className: "neck", label: "颈部", position: "neck" },
+    { pattern: /(左肩|左臂|左上肢|左手|左前臂|左肘|左腕)|\bleft (shoulder|arm|hand|forearm|elbow|wrist)\b/iu, className: "left-arm", label: "左上肢", position: "left-arm" },
+    { pattern: /(右肩|右臂|右上肢|右手|右前臂|右肘|右腕)|\bright (shoulder|arm|hand|forearm|elbow|wrist)\b/iu, className: "right-arm", label: "右上肢", position: "right-arm" },
+    { pattern: /(胸|腹|躯干|背)|\b(chest|abdomen|torso|back)\b/iu, className: "torso", label: "躯干", position: "torso" },
+    { pattern: /(左腿|左下肢|左膝|左脚|左大腿|左小腿|左踝)|\bleft (leg|knee|foot|thigh|calf|ankle)\b/iu, className: "left-leg", label: "左下肢", position: "left-leg" },
+    { pattern: /(右腿|右下肢|右膝|右脚|右大腿|右小腿|右踝)|\bright (leg|knee|foot|thigh|calf|ankle)\b/iu, className: "right-leg", label: "右下肢", position: "right-leg" },
 ];
 
 function renderInjuryMarkers(figure, injuryText) {
@@ -399,7 +436,7 @@ function renderInjuryMarkers(figure, injuryText) {
     const text = String(injuryText ?? "").trim();
     const parts = /^(无|未记录|无明显损伤)$/u.test(text)
         ? []
-        : text.split(/[；;，,\n]+/u).map(part => part.trim()).filter(Boolean);
+        : text.split(/[；;，,\n]+/u).map(part => part.trim()).filter(part=>part&&!/^\s*(?:no|without|denies)\b/iu.test(part));
     const activeLocations = INJURY_LOCATIONS.map(location => ({ location, parts: parts.filter(part => location.pattern.test(part)) }))
         .filter(item => item.parts.length);
 
@@ -414,12 +451,14 @@ function renderInjuryMarkers(figure, injuryText) {
 
         const marker = document.createElement("span");
         marker.className = `u4d-injury-marker ${location.position}${active ? " is-active" : ""}`;
-        marker.innerHTML = `<b aria-hidden="true">×</b><small></small>`;
+        marker.innerHTML = `<b aria-hidden="true"></b><small data-u4d-writing="true"></small>`;
         const compactParts = locationParts.map(part => {
             const detail = part.replace(location.pattern, "").replace(/^[：:,，\s]+/u, "").trim();
             return detail || "见病例记录";
         });
-        marker.querySelector("small").textContent = `${location.label} · ${compactParts.join("；")}`;
+        const en=getCaseSettings(SillyTavern.getContext()).language==='en';
+        const label=en?({'head':'Head / face','neck':'Neck','left-arm':'Left arm','right-arm':'Right arm','torso':'Torso','left-leg':'Left leg','right-leg':'Right leg'})[location.position]||location.label:location.label;
+        marker.querySelector("small").textContent = en?label:`${label} · ${compactParts.join('；')}`;
         layer.appendChild(marker);
     }
 }
@@ -436,7 +475,7 @@ function makeReportSection(title, subtitle = "") {
     return section;
 }
 
-function makeLinedField(label, value, lines = 1) {
+function makeLinedField(label, value, lines = 1, key = "") {
     const field = document.createElement("div");
     field.className = "u4d-lined-field";
     const labelElement = document.createElement("strong");
@@ -448,6 +487,8 @@ function makeLinedField(label, value, lines = 1) {
     scroll.style.setProperty("--u4d-lines", String(lines));
     const content = document.createElement("div");
     content.className = "u4d-lined-value";
+    content.dataset.u4dWriting = "true";
+    if(key)content.dataset.u4dField=key;
     content.textContent = text === "未记录" ? "" : text;
     scroll.appendChild(content);
     field.appendChild(scroll);
@@ -460,6 +501,7 @@ function makeCheckbox(label, checked) {
     const box = document.createElement("i");
     box.setAttribute("aria-hidden", "true");
     const text = document.createElement("span");
+    text.className = "u4d-printed-option";
     text.textContent = label;
     option.append(box, text);
     return option;
@@ -475,7 +517,11 @@ function makeStatusChecklistField(status, fieldKey, options = {}) {
         throw new Error(`Unknown checklist field: ${fieldKey}`);
     }
 
-    return makeChecklistField(definition.label, status[fieldKey], definition.options, options);
+    const english=getCaseSettings(SillyTavern.getContext()).language==='en';
+    const field=makeChecklistField(english?EN_CHECKLIST[fieldKey][0]:definition.label, status[fieldKey], english?definition.options.map(([,patterns],i)=>[EN_CHECKLIST[fieldKey][1][i],patterns]):definition.options, options);
+    const note=field.querySelector('.u4d-checklist-note');
+    if(note)note.dataset.u4dField=fieldKey;
+    return field;
 }
 
 function makeChecklistField(label, value, options, { showNote = true } = {}) {
@@ -491,7 +537,8 @@ function makeChecklistField(label, value, options, { showNote = true } = {}) {
     const text = String(value ?? "").trim();
     if (showNote) {
         const note = document.createElement("div");
-        note.className = "u4d-checklist-note";
+        note.className = "u4d-checklist-note u4d-scroll-region";
+        note.dataset.u4dWriting = "true";
         note.textContent = text === "未记录" ? "" : text;
         field.append(labelElement, optionsElement, note);
     } else {
@@ -500,39 +547,19 @@ function makeChecklistField(label, value, options, { showNote = true } = {}) {
     return field;
 }
 
-function createArchive(records) {
-    const archive = makeReportSection("永久病历归档", "长期记录 · 只追加");
-    archive.classList.add("u4d-report-archive");
-    const heading = document.createElement("div");
-    heading.className = "u4d-archive-count";
-    heading.textContent = `${records.length.toString().padStart(2, "0")} 条`;
-    archive.querySelector(".u4d-report-section-heading").appendChild(heading);
-
-    if (!records.length) {
-        const empty = document.createElement("p");
-        empty.className = "u4d-archive-empty";
-        empty.textContent = "暂无永久追加记录";
-        archive.appendChild(empty);
-        return archive;
-    }
-
-    const list = document.createElement("ol");
-    list.className = "u4d-archive-list u4d-scroll-region";
-    for (const [index, record] of records.entries()) {
-        const item = document.createElement("li");
-        const marker = document.createElement("span");
-        marker.className = "u4d-archive-index";
-        marker.textContent = `${String(index + 1).padStart(2, "0")}.`;
-        const text = document.createElement("span");
-        text.textContent = record;
-        item.append(marker, text);
-        list.appendChild(item);
-    }
-    archive.appendChild(list);
-    return archive;
+function createRecordControls() {
+    const section = makeReportSection("检查记录", "随当前聊天保存");
+    section.classList.add("u4d-report-archive");
+    const status = document.createElement("p");
+    status.className = "u4d-archive-empty u4d-recording-status";
+    status.setAttribute("role", "status");
+    status.textContent = recordingStatus;
+    section.append(status);
+    return section;
 }
 
 function closeInspectionSheet(sheetType) {
+    if (isMobileViewport()) { setInspectionOpen(false); return; }
     const target = sheetType === "date" ? dateInspectionWindow : inspectionWindow;
     if (!target) {
         return;
@@ -558,8 +585,11 @@ function renderInspectionContent(status) {
     if (!inspectionContent) {
         return;
     }
+    const settingsButton=inspectionRoot?.querySelector('.u4d-case-settings-open');
+    const settingsLabel=activeCaseProfile().language==='en'?'Case settings':'病例设置';
+    if(settingsButton&&settingsButton.textContent!==settingsLabel)settingsButton.textContent=settingsLabel;
 
-    const signature = JSON.stringify(status);
+    const signature = JSON.stringify([status,getCaseSettings(SillyTavern.getContext())]);
     if (inspectionContent.dataset.signature === signature && inspectionContent.querySelector(".u4d-report-stack")) {
         return;
     }
@@ -582,12 +612,13 @@ function renderInspectionContent(status) {
 
     const metaTable = document.createElement("div");
     metaTable.className = "u4d-report-meta";
-    for (const [label, value] of [["受检对象", getCharacterName()], ["记录日期", status.date], ["成长周期", status.growth], ["当前形态", status.form]]) {
+    for (const [label, value, key] of [["受检对象", status.caseDesign?.patient||activeCaseProfile().patient,"patient"], ["记录日期", status.date,"date"], ["成长周期", status.growth,"growth"], ["当前形态", status.form,"form"]]) {
         const cell = document.createElement("div");
         cell.className = "u4d-report-meta-cell";
-        cell.innerHTML = `<span></span><strong></strong>`;
+        cell.innerHTML = `<span></span><strong data-u4d-writing="true"></strong>`;
         cell.querySelector("span").textContent = label;
         cell.querySelector("strong").textContent = value;
+        cell.querySelector("strong").dataset.u4dField=key;
         cell.querySelector("strong").classList.add("u4d-scroll-region");
         metaTable.appendChild(cell);
     }
@@ -600,22 +631,22 @@ function renderInspectionContent(status) {
     leftColumn.className = "u4d-report-column u4d-report-column-left";
     const basicSection = makeReportSection("基本信息", "一般观察");
     basicSection.append(
-        makeLinedField("身体状态", status.body, 2),
+        makeLinedField("身体状态", status.body, 2, "body"),
         makeStatusChecklistField(status, "temperature"),
         makeStatusChecklistField(status, "breathing"),
         makeStatusChecklistField(status, "circulation"),
         makeStatusChecklistField(status, "energy"),
-        makeLinedField("当前驱动", status.drive, 2),
-        makeLinedField("观察重点", status.focus, 2),
+        makeLinedField("当前驱动", status.drive, 2, "drive"),
+        makeLinedField("观察重点", status.focus, 2, "focus"),
     );
     const responseSection = makeReportSection("边界与处置", "反应 / 处置");
     responseSection.append(
         makeStatusChecklistField(status, "pain"),
         makeStatusChecklistField(status, "risk"),
-        makeLinedField("处置记录", status.care, 2),
+        makeLinedField("处置记录", status.care, 2, "care"),
     );
     const freeNotesSection = makeReportSection("医嘱 / 备注", "补充记录");
-    freeNotesSection.append(makeLinedField("观察补记", status.observationNote, 14));
+    freeNotesSection.append(makeLinedField("观察补记", status.observationNote, 14, "observationNote"));
     leftColumn.append(basicSection, responseSection, freeNotesSection);
 
     const centerColumn = document.createElement("div");
@@ -630,7 +661,7 @@ function renderInspectionContent(status) {
     diagramPanel.appendChild(diagramNote);
 
     const injurySection = makeReportSection("损伤记录", "当前伤情");
-    injurySection.append(makeLinedField("当前损伤", status.injury, 3));
+    injurySection.append(makeLinedField("当前损伤", status.injury, 3, "injury"));
     const tissueSection = makeReportSection("组织与异常", "外观 / 四维反应");
     tissueSection.append(
         makeStatusChecklistField(status, "tissue"),
@@ -682,12 +713,16 @@ function renderInspectionContent(status) {
     rightColumn.append(physicalSection, adaptationSection, behaviorSection, hygieneSection);
     form.append(leftColumn, centerColumn, rightColumn);
     sheet.appendChild(form);
-    sheet.appendChild(createArchive(status.records));
+    sheet.appendChild(createRecordControls());
 
     const footer = document.createElement("footer");
     footer.className = "u4d-exam-footer";
-    footer.innerHTML = `<span>病例档案 / 当前记录</span><span>记录表 01</span>`;
+    footer.innerHTML = `<span class="u4d-case-signature">记录者：<b data-u4d-writing="true" data-u4d-field="writer"></b></span><span class="u4d-case-feedback"></span>`;
+    footer.querySelector('b').textContent=status.caseDesign?.writer||activeCaseProfile().writer||(activeCaseProfile().language==='en'?'Unsigned':'未署名');
     sheet.appendChild(footer);
+    localizePaper(sheet,getCaseSettings(SillyTavern.getContext()).language);
+    applyPaperSurface(sheet);
+    applyHandwriting(sheet);
 
     const stack = document.createElement("div");
     stack.className = "u4d-report-stack";
@@ -695,7 +730,12 @@ function renderInspectionContent(status) {
     attachInspectionDragHandle(stack);
     stack.addEventListener("wheel", handleReportWheel, { passive: false });
     stack.style.setProperty("--u4d-scale", String(reportZoom));
+    casePresentation?.dispose();
     inspectionContent.replaceChildren(stack);
+    casePresentation=renderCasePresentation(sheet,status.caseDesign,getCaseSettings(SillyTavern.getContext()),height=>{
+        reportBaseHeight=height;applyReportZoom();
+        if (isMobileViewport() && !inspectionRoot.hidden && !inspectionHasCustomPosition) fitMobilePaper("record");
+    });
     applyReportZoom();
     inspectionContent.dataset.signature = signature;
     removeInspectionHoverMetadata();
@@ -707,13 +747,15 @@ function renderDateInspectionContent(history) {
     }
 
     const normalizedHistory = mergeDailyHistory(history);
-    const signature = JSON.stringify(normalizedHistory);
+    const signature = JSON.stringify([normalizedHistory,activeCaseProfile().patient,activeCaseProfile().language,activeCaseProfile().font]);
     if (dateInspectionContent.dataset.signature === signature && dateInspectionContent.querySelector(".u4d-date-sheet")) {
         return;
     }
 
     const sheet = document.createElement("div");
     sheet.className = "u4d-exam-sheet u4d-date-sheet";
+    const dateSettings=getCaseSettings(SillyTavern.getContext());
+    if(dateSettings.language==='en')sheet.style.setProperty('--u4d-handwriting-font',fontStack(dateSettings.font));
     sheet.appendChild(makeSheetCloseButton("date"));
 
     const header = document.createElement("header");
@@ -731,13 +773,13 @@ function renderDateInspectionContent(history) {
     const meta = document.createElement("div");
     meta.className = "u4d-date-meta";
     for (const [label, value] of [
-        ["受检对象", getCharacterName()],
+        ["受检对象", activeCaseProfile().patient],
         ["最近日期", latest?.date ?? "未记录"],
         ["成长周期", latest?.growth ?? "未记录"],
         ["当前形态", latest?.form ?? "未记录"],
     ]) {
         const cell = document.createElement("div");
-        cell.innerHTML = `<span></span><strong class="u4d-scroll-region"></strong>`;
+        cell.innerHTML = `<span></span><strong class="u4d-scroll-region" data-u4d-writing="true"></strong>`;
         cell.querySelector("span").textContent = label;
         cell.querySelector("strong").textContent = value;
         meta.appendChild(cell);
@@ -763,7 +805,7 @@ function renderDateInspectionContent(history) {
             row.dataset.dayKey = entry.dayKey;
             row.setAttribute("role", "button");
             row.tabIndex = 0;
-            row.addEventListener("pointerdown", () => selectHistoryDay(entry.dayKey), { capture: true });
+            row.addEventListener("pointerdown", event => { if (event.pointerType !== "touch") selectHistoryDay(entry.dayKey); }, { capture: true });
             row.addEventListener("keydown", event => {
                 if (event.key !== "Enter" && event.key !== " ") {
                     return;
@@ -778,9 +820,11 @@ function renderDateInspectionContent(history) {
             sequence.textContent = String(normalizedHistory.length - index).padStart(2, "0");
             const date = document.createElement("strong");
             date.className = "u4d-date-value";
+            date.dataset.u4dWriting = "true";
             date.textContent = entry.date;
             const phase = document.createElement("span");
             phase.className = "u4d-date-phase";
+            phase.dataset.u4dWriting = "true";
             phase.textContent = `${entry.growth} / ${entry.form}`;
             const checks = document.createElement("div");
             checks.className = "u4d-date-checks";
@@ -789,9 +833,11 @@ function renderDateInspectionContent(history) {
             }
             const completion = document.createElement("span");
             completion.className = "u4d-date-completion";
+            completion.dataset.u4dWriting = "true";
             completion.textContent = `${Number(entry.observed) || 0} / ${Number(entry.total) || DAILY_OBSERVATION_FIELDS.length}`;
             const summary = document.createElement("span");
             summary.className = "u4d-date-summary";
+            summary.dataset.u4dWriting = "true";
             summary.textContent = entry.summary || "当日记录已建立";
             row.append(sequence, date, phase, checks, completion, summary);
             ledger.appendChild(row);
@@ -816,6 +862,9 @@ function renderDateInspectionContent(history) {
     footer.className = "u4d-exam-footer";
     footer.innerHTML = `<span>日期档案 / 随聊天保存</span><span>签到表 01</span>`;
     sheet.appendChild(footer);
+    localizePaper(sheet,getCaseSettings(SillyTavern.getContext()).language);
+    applyPaperSurface(sheet);
+    applyHandwriting(sheet);
 
     const stack = document.createElement("div");
     stack.className = "u4d-report-stack u4d-date-report-stack";
@@ -926,6 +975,38 @@ function getPointerDistance(points) {
     return Math.hypot(second.x - first.x, second.y - first.y);
 }
 
+// Scroll text in paper coordinates while keeping two-finger paper gestures available.
+function beginPaperScroll(sheetType, event, handle) {
+    const region = event.target.closest('.u4d-scroll-region');
+    if (event.pointerType !== 'touch' || !region || region.scrollHeight <= region.clientHeight + 1) return false;
+    event.preventDefault();
+    inspectionScrolls.set(sheetType, {pointerId:event.pointerId, region, startY:event.clientY,
+        startX:event.clientX, startTop:region.scrollTop, zoom:sheetType==='date'?dateReportZoom:reportZoom,
+        dayKey:event.target.closest('[data-day-key]')?.dataset.dayKey, moved:false});
+    try { handle.setPointerCapture(event.pointerId); } catch { /* Window capture remains available. */ }
+    return true;
+}
+function movePaperScroll(sheetType, event) {
+    const scroll = inspectionScrolls.get(sheetType);
+    if (!scroll || scroll.pointerId !== event.pointerId) return false;
+    event.preventDefault();
+    scroll.moved ||= Math.hypot(event.clientX-scroll.startX,event.clientY-scroll.startY)>4;
+    scroll.region.scrollTop = scroll.startTop-(event.clientY-scroll.startY)/scroll.zoom;
+    return true;
+}
+function endPaperScroll(sheetType, event) {
+    const scroll = inspectionScrolls.get(sheetType);
+    if (!scroll || scroll.pointerId !== event.pointerId) return false;
+    inspectionScrolls.delete(sheetType);
+    if (!scroll.moved && scroll.dayKey && event.type==='pointerup') selectHistoryDay(scroll.dayKey);
+    return true;
+}
+function clearInspectionGestures() {
+    inspectionScrolls.clear();inspectionPointers.clear();dateInspectionPointers.clear();
+    inspectionDrag=dateInspectionDrag=inspectionPinch=dateInspectionPinch=undefined;
+    inspectionRoot?.querySelectorAll('.is-dragging').forEach(n=>n.classList.remove('is-dragging'));
+}
+
 function beginInspectionPinch(sheetType, handle) {
     const pointers = sheetType === "date" ? dateInspectionPointers : inspectionPointers;
     const distance = getPointerDistance(pointers);
@@ -933,12 +1014,19 @@ function beginInspectionPinch(sheetType, handle) {
         return;
     }
 
+    inspectionScrolls.delete(sheetType);
+    const target = sheetType === "date" ? dateInspectionWindow : inspectionWindow;
+    const rect = target.getBoundingClientRect();
+    const [first, second] = [...pointers.values()];
+    const zoom = sheetType === "date" ? dateReportZoom : reportZoom;
+    const anchor = { x:((first.x+second.x)/2-rect.left)/zoom, y:((first.y+second.y)/2-rect.top)/zoom };
+    target.classList.remove("is-dragging");
     if (sheetType === "date") {
         dateInspectionDrag = undefined;
-        dateInspectionPinch = { startDistance: distance, startZoom: dateReportZoom, handle };
+        dateInspectionPinch = { startDistance: distance, startZoom: dateReportZoom, handle, anchor };
     } else {
         inspectionDrag = undefined;
-        inspectionPinch = { startDistance: distance, startZoom: reportZoom, handle };
+        inspectionPinch = { startDistance: distance, startZoom: reportZoom, handle, anchor };
     }
     handle.classList.remove("is-dragging");
 }
@@ -964,6 +1052,12 @@ function updateInspectionPinch(sheetType, event) {
         reportZoom = nextZoom;
         applyReportZoom();
     }
+    const [first, second] = [...pointers.values()];
+    const target = sheetType === "date" ? dateInspectionWindow : inspectionWindow;
+    target.style.left = `${(first.x+second.x)/2-pinch.anchor.x*nextZoom}px`;
+    target.style.top = `${(first.y+second.y)/2-pinch.anchor.y*nextZoom}px`;
+    if (sheetType === "date") dateInspectionHasCustomPosition=true; else inspectionHasCustomPosition=true;
+    updateMobileControls();
     event.preventDefault();
     return true;
 }
@@ -998,6 +1092,7 @@ function bindInspectionDragEvents() {
     window.addEventListener("pointercancel", endDateInspectionDrag, { capture: true });
     window.addEventListener("click", routeInspectionClick, { capture: true });
     window.addEventListener("resize", handleInspectionViewportResize, { passive: true });
+    window.visualViewport?.addEventListener("resize", handleInspectionViewportResize, { passive: true });
 }
 
 function routeInspectionClick(event) {
@@ -1037,8 +1132,9 @@ function routeInspectionPointerDown(event) {
         if (trackInspectionPointer("date", event)) {
             return;
         }
+        if (beginPaperScroll("date", event, handle)) return;
         const row = event.target.closest(".u4d-date-ledger-row[data-day-key]");
-        if (row?.dataset.dayKey) {
+        if (row?.dataset.dayKey && event.pointerType !== "touch") {
             selectHistoryDay(row.dataset.dayKey);
         }
         beginDateInspectionDrag(event, handle, row?.dataset.dayKey);
@@ -1046,7 +1142,7 @@ function routeInspectionPointerDown(event) {
         if (trackInspectionPointer("record", event)) {
             return;
         }
-        beginInspectionDrag(event, handle);
+        if (!beginPaperScroll("record", event, handle)) beginInspectionDrag(event, handle);
     }
 }
 
@@ -1088,6 +1184,7 @@ function moveInspection(event) {
     if (updateInspectionPinch("record", event)) {
         return;
     }
+    if (movePaperScroll("record", event)) return;
     if (!inspectionDrag || event.pointerId !== inspectionDrag.pointerId) {
         return;
     }
@@ -1110,6 +1207,7 @@ function endInspectionDrag(event) {
             return;
         }
     }
+    if (endPaperScroll("record", event)) return;
     if (!inspectionDrag || event.pointerId !== inspectionDrag.pointerId) {
         return;
     }
@@ -1161,6 +1259,7 @@ function moveDateInspection(event) {
     if (updateInspectionPinch("date", event)) {
         return;
     }
+    if (movePaperScroll("date", event)) return;
     if (!dateInspectionDrag || event.pointerId !== dateInspectionDrag.pointerId) {
         return;
     }
@@ -1183,12 +1282,14 @@ function endDateInspectionDrag(event) {
             return;
         }
     }
+    if (endPaperScroll("date", event)) return;
     if (!dateInspectionDrag || event.pointerId !== dateInspectionDrag.pointerId) {
         return;
     }
 
     const completed = dateInspectionDrag;
     dateInspectionDrag = undefined;
+    if (!completed.moved && completed.dayKey && event.pointerType === "touch" && event.type === "pointerup") selectHistoryDay(completed.dayKey);
     dateInspectionHasCustomPosition = true;
     dateInspectionWindow.classList.remove("is-dragging");
     completed.handle.classList.remove("is-dragging");
@@ -1277,7 +1378,82 @@ function clampInspectionWindowToViewport(target) {
     target.style.top = `${Math.round(position.top)}px`;
 }
 
+function updateMobileControls() {
+    if (!inspectionRoot) return;
+    const mobile=isMobileViewport(), english=getCaseSettings(SillyTavern.getContext()).language==='en';
+    inspectionRoot.dataset.mobile=String(mobile);
+    if(mobile){const view=getMobileViewport();
+        inspectionRoot.style.setProperty('--u4d-mobile-width',`${view.width}px`);
+        inspectionRoot.style.setProperty('--u4d-mobile-height',`${view.height}px`);
+    }
+    const settingsButton=inspectionRoot.querySelector('.u4d-case-settings-open');
+    if(settingsButton)settingsButton.textContent=english?(mobile?'Settings':'Case settings'):'病例设置';
+    const labels=english?{record:'Case',date:'Check-in',out:'−',fit:'Fit',in:'+',close:'Close'}:
+        {record:'病例',date:'签到',out:'−',fit:'适屏',in:'+',close:'关闭'};
+    const zoom=mobileSheet==='date'?dateReportZoom:reportZoom;
+    for(const button of inspectionRoot.querySelectorAll('[data-mobile-action]')) {
+        const action=button.dataset.mobileAction;
+        button.textContent=labels[action]+(action==='fit'?` ${Math.round(zoom*100)}%`:'');
+        button.setAttribute('aria-label',action==='in'?(english?'Zoom in':'放大'):action==='out'?(english?'Zoom out':'缩小'):labels[action]);
+        if(action==='record'||action==='date')button.setAttribute('aria-pressed',String(mobileSheet===action));
+    }
+}
+function fitMobilePaper(type=mobileSheet) {
+    if (!inspectionRoot || !isMobileViewport()) return;
+    const toolbar=inspectionRoot.querySelector('.u4d-case-toolbar').getBoundingClientRect();
+    const height=type==='date'?BASE_REPORT_HEIGHT:reportBaseHeight;
+    const view=getMobileViewport(),landscape=view.width>view.height;
+    const width=landscape&&toolbar.width?toolbar.left-10:view.width;
+    const bottom=landscape?view.height-12:toolbar.height?toolbar.top-10:view.height-124;
+    const zoom=Math.max(MIN_REPORT_ZOOM,Math.floor(Math.min(1.35,(width-16)/BASE_REPORT_WIDTH,(bottom-12)/height)*100)/100);
+    const target=type==='date'?dateInspectionWindow:inspectionWindow;
+    if(type==='date'){dateReportZoom=zoom;dateInspectionHasCustomPosition=false;applyDateReportZoom();}
+    else{reportZoom=zoom;inspectionHasCustomPosition=false;applyReportZoom();}
+    target.style.left=`${Math.round((width-BASE_REPORT_WIDTH*zoom)/2)}px`;
+    target.style.top=`${Math.max(12,Math.round((bottom-height*zoom)/2))}px`;
+    updateMobileControls();
+}
+function showMobilePaper(type) {
+    mobileSheet=type;clearInspectionGestures();
+    inspectionWindow.hidden=type!=='record';dateInspectionWindow.hidden=type!=='date';
+    if (type==='record') casePresentation?.refresh();
+    updateMobileControls();fitMobilePaper(type);
+}
+function createMobileControls(bar) {
+    for(const action of ['record','date','out','fit','in','close']) {
+        const button=document.createElement('button');button.type='button';
+        button.className='u4d-mobile-control';button.dataset.mobileAction=action;
+        button.addEventListener('click',()=>{
+            if(action==='close'){setInspectionOpen(false);return;}
+            if(action==='record'||action==='date'){showMobilePaper(action);return;}
+            if(action==='fit'){clearInspectionGestures();fitMobilePaper();return;}
+            const target=mobileSheet==='date'?dateInspectionWindow:inspectionWindow;
+            const before=target.getBoundingClientRect(),old=mobileSheet==='date'?dateReportZoom:reportZoom;
+            if(mobileSheet==='date'){changeDateReportZoom(action==='in'?.12:-.12);dateInspectionHasCustomPosition=true;}
+            else{changeReportZoom(action==='in'?.12:-.12);inspectionHasCustomPosition=true;}
+            const zoom=mobileSheet==='date'?dateReportZoom:reportZoom;
+            const toolbar=bar.getBoundingClientRect(),view=getMobileViewport(),side=view.width>view.height;
+            const anchorX=(Math.min(side?toolbar.left-10:view.width,before.right)+Math.max(0,before.left))/2;
+            const anchorY=(Math.min(side?view.height-12:toolbar.top-10,before.bottom)+Math.max(12,before.top))/2;
+            target.style.left=`${anchorX-(anchorX-before.left)*zoom/old}px`;
+            target.style.top=`${anchorY-(anchorY-before.top)*zoom/old}px`;
+            updateMobileControls();
+        });bar.append(button);
+    }
+}
+
 function handleInspectionViewportResize() {
+    if (document.querySelector('.u4d-case-settings[open]')) return;
+    updateMobileControls();
+    if (inspectionRoot && isMobileViewport()) {
+        viewportMode=getViewportMode();applySavedLauncherPosition();
+        if (!inspectionRoot.hidden) showMobilePaper(mobileSheet);
+        return;
+    }
+    if (inspectionRoot && viewportMode!=='desktop') {
+        inspectionWindow.hidden=false;dateInspectionWindow.hidden=false;
+        inspectionHasCustomPosition=dateInspectionHasCustomPosition=false;
+    }
     const nextViewportMode = getViewportMode();
     if (nextViewportMode !== viewportMode && !inspectionHasCustomPosition && !dateInspectionHasCustomPosition) {
         reportZoom = getInitialReportZoom();
@@ -1333,7 +1509,12 @@ function createInspectionWindow() {
     dateInspectionContent.className = "u4d-inspection-content u4d-date-inspection-content";
     dateInspectionWindow.appendChild(dateInspectionContent);
 
-    inspectionRoot.append(inspectionWindow, dateInspectionWindow);
+    const toolbar=createCaseSettingsButton(()=>SillyTavern.getContext(),()=>{
+        selectedHistoryDayKey=undefined;updateStatusPrompt();scheduleScan();updateMobileControls();
+    });
+    createMobileControls(toolbar);
+    inspectionRoot.append(inspectionWindow, dateInspectionWindow, toolbar);
+    updateMobileControls();
     document.body.appendChild(inspectionRoot);
     bindInspectionDragEvents();
     renderInspectionContent(latestStatus);
@@ -1352,6 +1533,7 @@ function setInspectionOpen(open) {
     }
 
     if (!open) {
+        clearInspectionGestures();
         inspectionRoot.hidden = true;
         inspectionRoot.setAttribute("aria-hidden", "true");
         floatingLauncher?.classList.remove("is-open");
@@ -1373,9 +1555,12 @@ function setInspectionOpen(open) {
     document.body.appendChild(inspectionRoot);
     inspectionRoot.hidden = false;
     inspectionRoot.setAttribute("aria-hidden", "false");
+    updateMobileControls();
+    if (isMobileViewport()) showMobilePaper("record");
+    casePresentation?.refresh();
     floatingLauncher?.classList.add("is-open");
     lockPageScroll();
-    inspectionWindow.querySelector(".u4d-sheet-close")?.focus({ preventScroll: true });
+    (isMobileViewport()?inspectionRoot.querySelector('[data-mobile-action="record"]'):inspectionWindow.querySelector(".u4d-sheet-close"))?.focus({ preventScroll: true });
 }
 
 function lockPageScroll() {
@@ -1417,208 +1602,23 @@ function updateInspectionStatus(status, dailyHistory = latestDailyHistory) {
         records: [...(status?.records ?? [])],
     };
     latestDailyHistory = mergeDailyHistory(dailyHistory);
-    renderInspectionContent(latestStatus);
+    const selected = latestDailyHistory.find(entry => entry.dayKey === selectedHistoryDayKey);
+    if (!selected) selectedHistoryDayKey = undefined;
+    renderInspectionContent(selected?.snapshot ?? latestStatus);
     renderDateInspectionContent(latestDailyHistory);
 }
 
-function getPersistedSnapshot() {
-    const stored = chat_metadata?.[STATUS_METADATA_KEY];
-    if (!stored || ![2, 3].includes(stored.version) || !stored.current) {
-        return null;
-    }
-
-    return {
-        sourceSignature: typeof stored.sourceSignature === "string" ? stored.sourceSignature : "",
-        state: {
-            ...createInitialStatus(),
-            ...stored.current,
-            records: Array.isArray(stored.records) ? stored.records.filter(Boolean).map(String) : [],
-        },
-        dailyHistory: mergeDailyHistory(stored.dailyHistory),
-    };
-}
-
-function getPersistedState() {
-    return getPersistedSnapshot()?.state ?? null;
-}
-
-function findStatusAnchor(currentLines, previousLines) {
-    if (!previousLines.length || !currentLines.length) {
-        return null;
-    }
-
-    for (let length = Math.min(currentLines.length, previousLines.length); length > 0; length -= 1) {
-        const expected = previousLines.slice(-length);
-        for (let start = 0; start <= currentLines.length - length; start += 1) {
-            if (expected.every((line, index) => currentLines[start + index] === line)) {
-                return { start, length };
-            }
-        }
-    }
-
-    return null;
-}
-
-function resolveCurrentState(replayed, rawLines) {
-    const persisted = getPersistedSnapshot();
-    if (!persisted) {
-        return replayed;
-    }
-
-    if (!rawLines.length) {
-        return persisted.state;
-    }
-
-    const previousLines = persisted.sourceSignature ? persisted.sourceSignature.split("\n") : [];
-    const anchor = findStatusAnchor(rawLines, previousLines);
-    if (anchor) {
-        let resolved = {
-            ...persisted.state,
-            records: [...persisted.state.records],
-        };
-        const newLines = rawLines.slice(anchor.start + anchor.length);
-        for (const line of newLines) {
-            const update = findStatusUpdates(line)[0];
-            if (update) {
-                resolved = applyStatusUpdate(resolved, update);
-            }
-        }
-        return resolved;
-    }
-
-    const merged = {
-        ...replayed,
-        records: [...persisted.state.records],
-    };
-    for (const record of replayed.records) {
-        if (!merged.records.includes(record)) {
-            merged.records.push(record);
-        }
-    }
-    return merged;
-}
-
 function buildTimeline() {
-    let current = createInitialStatus();
-    const snapshots = new Map();
-    const rawLines = [];
-    const replayedDailyHistory = new Map();
-    let statusCount = 0;
-    let lastSnapshotMessage;
-
-    for (const message of document.querySelectorAll("#chat .mes")) {
-        if (message.getAttribute("is_user") === "true") {
-            continue;
-        }
-
-        const textRoot = message.querySelector(".mes_text");
-        const updates = textRoot ? findStatusUpdates(textRoot.textContent) : [];
-        if (!updates.length) {
-            continue;
-        }
-
-        for (const update of updates) {
-            current = applyStatusUpdate(current, update);
-            const checkin = createDailyCheckin(current);
-            if (checkin) {
-                replayedDailyHistory.set(checkin.dayKey, checkin);
-            }
-            rawLines.push(update.raw);
-            statusCount += 1;
-        }
-
-        snapshots.set(message, {
-            ...current,
-            records: [...current.records],
-        });
-        lastSnapshotMessage = message;
+    const character = characters?.[this_chid];
+    const timeline = readTimeline(SillyTavern.getContext().chat ?? [], message =>
+        message.original_avatar ? message.original_avatar === character?.avatar
+            : !message.name || message.name === getCharacterName(), activeCaseProfile());
+    const days = new Map();
+    for (const { status } of timeline.snapshots) {
+        const checkin = createDailyCheckin(status);
+        if (checkin) days.set(checkin.dayKey, checkin);
     }
-
-    const persisted = getPersistedSnapshot();
-    if (statusCount) {
-        current = resolveCurrentState(current, rawLines);
-        if (lastSnapshotMessage) {
-            snapshots.set(lastSnapshotMessage, {
-                ...current,
-                records: [...current.records],
-            });
-        }
-    } else {
-        current = persisted?.state ?? current;
-    }
-
-    const currentCheckin = createDailyCheckin(current);
-    if (currentCheckin) {
-        replayedDailyHistory.set(currentCheckin.dayKey, currentCheckin);
-    }
-    const dailyHistory = mergeDailyHistory(persisted?.dailyHistory, [...replayedDailyHistory.values()]);
-
-    return {
-        current,
-        dailyHistory,
-        snapshots,
-        rawSignature: rawLines.join("\n"),
-        hasStatuses: statusCount > 0,
-    };
-}
-
-function persistTimeline(timeline) {
-    if (!isTargetCharacter() || !timeline.hasStatuses || !chat_metadata) {
-        return;
-    }
-
-    const next = {
-        version: 3,
-        sourceSignature: timeline.rawSignature,
-        current: {
-            date: timeline.current.date,
-            growth: timeline.current.growth,
-            form: timeline.current.form,
-            body: timeline.current.body,
-            temperature: timeline.current.temperature,
-            breathing: timeline.current.breathing,
-            circulation: timeline.current.circulation,
-            energy: timeline.current.energy,
-            injury: timeline.current.injury,
-            drive: timeline.current.drive,
-            pain: timeline.current.pain,
-            tissue: timeline.current.tissue,
-            focus: timeline.current.focus,
-            observationNote: timeline.current.observationNote,
-            mental: timeline.current.mental,
-            cognition: timeline.current.cognition,
-            mobility: timeline.current.mobility,
-            posture: timeline.current.posture,
-            activity: timeline.current.activity,
-            stress: timeline.current.stress,
-            touchTolerance: timeline.current.touchTolerance,
-            senses: timeline.current.senses,
-            communication: timeline.current.communication,
-            intake: timeline.current.intake,
-            rest: timeline.current.rest,
-            care: timeline.current.care,
-            hygiene: timeline.current.hygiene,
-            secretion: timeline.current.secretion,
-            excretion: timeline.current.excretion,
-            muscleTone: timeline.current.muscleTone,
-            stability: timeline.current.stability,
-            selfCare: timeline.current.selfCare,
-            boundary: timeline.current.boundary,
-            adaptation: timeline.current.adaptation,
-            learning: timeline.current.learning,
-            anomaly: timeline.current.anomaly,
-            risk: timeline.current.risk,
-        },
-        records: [...timeline.current.records],
-        dailyHistory: mergeDailyHistory(timeline.dailyHistory),
-    };
-
-    if (JSON.stringify(chat_metadata[STATUS_METADATA_KEY]) === JSON.stringify(next)) {
-        return;
-    }
-
-    chat_metadata[STATUS_METADATA_KEY] = next;
-    saveChatDebounced();
+    return { current: timeline.current, dailyHistory: [...days.values()] };
 }
 
 function renderMessage(message) {
@@ -1632,8 +1632,9 @@ function renderMessage(message) {
         return;
     }
 
-    removeLegacyStatusMarkup(textRoot);
-    hideStatusMarkup(textRoot);
+    const index = Number(message.getAttribute("mesid"));
+    const source = SillyTavern.getContext().chat?.[index];
+    if (source) renderStatusFold(message, source);
 }
 
 function renderAllMessages() {
@@ -1716,23 +1717,9 @@ function scanChat() {
 
     const timeline = buildTimeline();
     updateInspectionStatus(timeline.current, timeline.dailyHistory);
-    updateStatusPrompt(timeline.current);
     for (const message of document.querySelectorAll("#chat .mes")) {
         renderMessage(message);
     }
-    persistTimeline(timeline);
-}
-
-function refreshStatusPromptFromChat() {
-    if (!isTargetCharacter()) {
-        clearStatusPrompt();
-        return;
-    }
-
-    const timeline = buildTimeline();
-    updateInspectionStatus(timeline.current, timeline.dailyHistory);
-    updateStatusPrompt(timeline.current);
-    persistTimeline(timeline);
 }
 
 function scheduleScan() {
@@ -1759,6 +1746,10 @@ function observeChat() {
 }
 
 export function init() {
+    if (initialized) return;
+    initialized = true;
+    detachChatFields();
+    updateStatusPrompt();
     createFloatingLauncher();
     createInspectionWindow();
     document.addEventListener("keydown", event => {
@@ -1766,18 +1757,30 @@ export function init() {
             setInspectionOpen(false);
         }
     });
-    eventSource.makeFirst(event_types.CHARACTER_MESSAGE_RENDERED, renderMessageImmediately);
-    eventSource.makeFirst(event_types.MESSAGE_RECEIVED, renderMessageImmediately);
-    eventSource.makeFirst(event_types.MESSAGE_UPDATED, renderMessageImmediately);
-    eventSource.makeFirst(event_types.MESSAGE_EDITED, renderMessageImmediately);
-    eventSource.makeFirst(event_types.MESSAGE_SWIPED, renderMessageImmediately);
+    // Detach before built-in memory and vector listeners see the completed reply.
+    for (const event of [event_types.MESSAGE_RECEIVED, event_types.CHARACTER_MESSAGE_RENDERED,
+        event_types.MESSAGE_UPDATED, event_types.MESSAGE_EDITED, event_types.MESSAGE_SWIPED,
+        event_types.MESSAGE_DELETED, event_types.GENERATION_ENDED, event_types.GENERATION_STOPPED]) {
+        if (event) eventSource.makeFirst(event, messageId => {
+            detachChatFields();
+            renderMessageImmediately(messageId);
+            scheduleScan();
+        });
+    }
     eventSource.makeFirst(event_types.MORE_MESSAGES_LOADED, renderAllMessages);
-    eventSource.makeFirst(event_types.GENERATION_STARTED, refreshStatusPromptFromChat);
-    eventSource.on(event_types.CHAT_CHANGED, () => {
+    eventSource.makeFirst(event_types.GENERATION_STARTED, () => {
+        detachChatFields();
+        updateStatusPrompt();
+    });
+    eventSource.on(event_types.CHAT_COMPLETION_PROMPT_READY, event=>cleanChatCompletion(event,currentStatusContract));
+    eventSource.on(event_types.GENERATE_AFTER_COMBINE_PROMPTS, event=>cleanTextCompletion(event,currentStatusContract));
+    eventSource.makeFirst(event_types.CHAT_CHANGED, () => {
+        detachChatFields();
+        selectedHistoryDayKey = undefined;
+        updateRecordingStatus("检查字段折叠在正文下方，仅供表格查看");
         updateInspectionStatus(createInitialStatus(), []);
         updateChatScope();
         observeChat();
     });
-
     observeChat();
 }
